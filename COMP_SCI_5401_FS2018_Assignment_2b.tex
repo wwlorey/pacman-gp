@@ -1,0 +1,49 @@
+\documentclass[11pt]{article}
+\usepackage[left=3cm, right=3cm, top=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{float}
+
+% Prevent heading numbers
+\setcounter{secnumdepth}{0}
+
+% Command definitions 
+\newcommand{\fitnessplotcaption}[1]{\caption{Evaluations versus Fitness for the \textbf{{#1}}, Randomly Generated World}}
+
+\newcommand{\addgraphic}[1]{\centerline{\includegraphics[scale=0.7]{output/#1_graph.png}}}
+
+\title{COMP SCI 5401 FS2018 Assignment 2a}
+\author{William  Lorey \\ wwlytc@mst.edu}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{figure}[H]
+    \addgraphic{small}
+    \fitnessplotcaption{Small}
+    \label{fig:small}
+\end{figure}
+
+\begin{figure}[H]
+    \addgraphic{med_small}
+    \fitnessplotcaption{Medium Small}
+    \label{fig:med_small}
+\end{figure}
+
+\begin{figure}[H]
+    \addgraphic{med_large}
+    \fitnessplotcaption{Medium Large}
+    \label{fig:med_large}
+\end{figure}
+
+\begin{figure}[H]
+    \addgraphic{large}
+    \fitnessplotcaption{Large}
+    \label{fig:large}
+\end{figure}
+
+\end{document}
+
