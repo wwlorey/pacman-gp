@@ -32,6 +32,10 @@ class GPDriver:
 
         self.game_state = game_state_class.GameState(self.gpac_world.pacman_coord, self.gpac_world.ghost_coords, self.gpac_world.pill_coords)
 
+        self.population = []
+        self.parents = []
+        self.children = []
+
 
     def execute_turn(self):
         """Executes one game turn.
@@ -79,6 +83,49 @@ class GPDriver:
         """
         self.check_update_log_world_files()
         self.eval_count += 1
+
+
+    def evaluate(self, population):
+        """Evaluates all population members (worlds) given in population by running
+        each world's game until completion. 
+        """
+        pass
+
+
+    def select_parents(self):
+        """Chooses which parents from the population will breed.
+
+        Depending on the parent selection configuration, one of the three following 
+        methods is used to select parents:
+            1. Fitness proportional selection
+            2. Over-selection
+
+        The resulting parents are stored in self.parents.
+        """
+        self.parents = []
+        
+
+    def recombine(self):
+        """Breeds lambda (offspring pool size) children using sub-tree crossover 
+        from the existing parent population. The resulting children are stored in 
+        self.children.
+        """
+        self.children = []
+        
+
+    def mutate(self):
+        """Probabilistically performs mutation on each child in the child population."""
+        pass
+        
+
+    def select_for_survival(self):
+        """Survivors are selected based on the following configurable methods:
+            1. k-tournament selection without replacement
+            2. Truncation
+
+        Survivors are stored in self.population.
+        """
+        pass
 
 
     def update_game_state(self):

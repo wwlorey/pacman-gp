@@ -23,8 +23,20 @@ if __name__ == '__main__':
     while gp_driver.run_count <= int(config.settings['num experiment runs']):
         gp_driver.begin_run()
 
+        gp_driver.evaluate(gp_driver.population)
+
         while gp_driver.decide_termination():
             gp_driver.begin_eval()
+
+            gp_driver.select_parents()
+
+            gp_driver.recombine()
+
+            gp_driver.mutate()
+
+            gp_driver.evaluate(gp_driver.children)
+
+            gp_driver.select_for_survival()
 
             while gp_driver.check_game_over():
                 gp_driver.execute_turn()
