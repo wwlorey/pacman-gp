@@ -12,12 +12,13 @@ class WorldFile:
         self.prev_seen_fruit = coord_class.Coordinate(-1, -1)
 
 
-    def save_first_snapshot(self, width, height, pacman, walls, ghosts, pills, remaining_time):
+    def save_first_snapshot(self, width, height, pacmen, walls, ghosts, pills, remaining_time):
         """Saves the initial snapshot to the world file string."""
         self.save_line(width)
         self.save_line(height)
 
-        self.save_triplet('m', pacman.x, pacman.y)
+        for pacman in pacmen:
+            self.save_triplet('m', pacman.x, pacman.y)
 
         for c in walls:
             self.save_triplet('w', c.x, c.y)
@@ -31,9 +32,10 @@ class WorldFile:
         self.save_triplet('t', remaining_time, 0)
 
         
-    def save_snapshot(self, pacman, ghosts, fruit, remaining_time, score):
+    def save_snapshot(self, pacmen, ghosts, fruit, remaining_time, score):
         """Saves a non-initial snapshot to the world file string."""
-        self.save_triplet('m', pacman.x, pacman.y)     
+        for pacman in pacmen:
+            self.save_triplet('m', pacman.x, pacman.y)     
 
         for ghost_id in range(len(ghosts)):
             self.save_triplet(ghost_id + 1, ghosts[ghost_id].x, ghosts[ghost_id].y)

@@ -30,7 +30,7 @@ class GPDriver:
         self.pacman_cont = pacman_cont_class.PacmanController(self.config)
         self.ghosts_cont = ghosts_cont_class.GhostsController(self.config)
 
-        self.game_state = game_state_class.GameState(self.gpac_world.pacman_coord, self.gpac_world.ghost_coords, self.gpac_world.pill_coords)
+        self.game_state = game_state_class.GameState(self.gpac_world.pacman_coords, self.gpac_world.ghost_coords, self.gpac_world.pill_coords)
 
         self.population = []
         self.parents = []
@@ -136,7 +136,7 @@ class GPDriver:
         else:
             fruit_coord = None
 
-        self.game_state.update(self.gpac_world.pacman_coord, self.gpac_world.ghost_coords, self.gpac_world.pill_coords, fruit_coord)
+        self.game_state.update(self.gpac_world.pacman_coords, self.gpac_world.ghost_coords, self.gpac_world.pill_coords, fruit_coord)
 
 
     def move_units(self):
@@ -159,21 +159,22 @@ class GPDriver:
         # Update time remaining
         self.gpac_world.time_remaining -= 1
 
-        # Update pills
-        if self.gpac_world.pacman_coord in self.gpac_world.pill_coords:
-            self.gpac_world.pill_coords.remove(self.gpac_world.pacman_coord)
-            self.gpac_world.num_pills_consumed += 1
+        for pacman_coord in self.gpac_world.pacman_coords:
+            # Update pills
+            if pacman_coord in self.gpac_world.pill_coords:
+                self.gpac_world.pill_coords.remove(pacman_coord)
+                self.gpac_world.num_pills_consumed += 1
 
-        # Update fruit
-        if self.gpac_world.pacman_coord in self.gpac_world.fruit_coord:
-            self.gpac_world.fruit_coord.remove(self.gpac_world.pacman_coord)
-            self.gpac_world.num_fruit_consumed += 1
+            # Update fruit
+            if pacman_coord in self.gpac_world.fruit_coord:
+                self.gpac_world.fruit_coord.remove(pacman_coord)
+                self.gpac_world.num_fruit_consumed += 1
 
         # Update score
         self.gpac_world.update_score()
 
         # Update the world state
-        self.gpac_world.world_file.save_snapshot(self.gpac_world.pacman_coord,
+        self.gpac_world.world_file.save_snapshot(self.gpac_world.pacman_coords,
             self.gpac_world.ghost_coords, self.gpac_world.fruit_coord, 
             self.gpac_world.time_remaining, self.gpac_world.score)
 

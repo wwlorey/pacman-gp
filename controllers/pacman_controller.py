@@ -52,6 +52,8 @@ class PacmanController(base_controller_class.BaseController):
     def get_move(self, game_state):
         """Checks all possible moves against the state evaluator and 
         determines which move is optimal, returning that move.
+
+        This is performed for each pacman presented as part of the game state.
         """
 
         def move_pacman(pacman_coord, direction):
@@ -82,20 +84,25 @@ class PacmanController(base_controller_class.BaseController):
             return False
 
 
-        best_eval_result = 0
-        best_eval_direction = d.Direction.NONE
+        best_eval_directions = []
 
-        for direction in POSSIBLE_MOVES:
-            tmp_pacman_coord = copy.deepcopy(game_state.pacman_coord)
+        for pacman_coord in game_state.pacman_coords:
+            best_eval_result = 0
+            best_eval_direction = d.Direction.NONE
 
-            if move_pacman(tmp_pacman_coord, direction):
-                eval_result = self.evaluate_state(game_state, tmp_pacman_coord)
+            for direction in POSSIBLE_MOVES:
+                tmp_pacman_coord = copy.deepcopy(pacman_coord)
 
-                if eval_result > best_eval_result:
-                    best_eval_result = eval_result
-                    best_eval_direction = direction
+                if move_pacman(tmp_pacman_coord, direction):
+                    eval_result = self.evaluate_state(game_state, tmp_pacman_coord)
 
-        return best_eval_direction
+                    if eval_result > best_eval_result:
+                        best_eval_result = eval_result
+                        best_eval_direction = direction
+            
+            best_eval_directions.append(best_eval_direction)
+
+        return best_eval_directions
          
 
     def evaluate_state(self, game_state, pacman_coord=None):

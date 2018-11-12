@@ -21,14 +21,15 @@ class GPacWorld:
         self.height = int(self.config.settings['height'])
         self.pill_density = float(self.config.settings['pill density']) / 100
         self.wall_density = float(self.config.settings['wall density']) / 100
+        self.num_pacmen = int(self.config.settings['num pacmen'])
         self.num_ghosts = int(self.config.settings['num ghosts'])
         self.fruit_spawn_prob = float(self.config.settings['fruit spawn prob'])
         self.fruit_score = int(self.config.settings['fruit score'])
         self.time_multiplier = int(self.config.settings['time multiplier'])
 
         # Create initial world attributes
-        self.pacman_coord = coord_class.Coordinate(0, self.height - 1)
-        self.prev_pacman_coord = self.pacman_coord
+        self.pacman_coords= [coord_class.Coordinate(0, self.height - 1) for _ in range(self.num_pacmen)]
+        self.prev_pacman_coords = copy.deepcopy(self.pacman_coords)
         self.ghost_coords = [coord_class.Coordinate(self.width - 1, 0) for _ in range(self.num_ghosts)]
         self.prev_ghost_coords = copy.deepcopy(self.ghost_coords)
         self.wall_coords = set([])
@@ -55,7 +56,7 @@ class GPacWorld:
 
         # Create & write to world file
         self.world_file = world_file_class.WorldFile(self.config)
-        self.world_file.save_first_snapshot(self.width, self.height, self.pacman_coord,
+        self.world_file.save_first_snapshot(self.width, self.height, self.pacman_coords,
             self.wall_coords, self.ghost_coords, self.pill_coords, self.time_remaining)
 
 
@@ -74,7 +75,7 @@ class GPacWorld:
                 the unit (pacman & ghosts) starting coords, ensuring these
                 coords are carved out.
                 """
-                wall_carver_list[0].coord = self.pacman_coord
+                wall_carver_list[0].coord = self.pacman_coords[0]
                 wall_carver_list[1].coord = self.ghost_coords[0]
 
 
@@ -136,42 +137,43 @@ class GPacWorld:
         add_walls()
 
         # Add pills to the world
-        for c in self.all_coords.difference(set([self.pacman_coord])).difference(self.wall_coords):
+        for c in self.all_coords.difference(set(self.pacman_coords)).difference(self.wall_coords):
             if random.random() < self.pill_density:
                 self.pill_coords.add(c)
 
         # Ensure at least one pill was placed
         if not len(self.pill_coords):
-            for c in self.all_coords.difference(set([self.pacman_coord])).difference(self.wall_coords):
+            for c in self.all_coords.difference(set(self.pacman_coords)).difference(self.wall_coords):
                 self.pill_coords.add(c)
                 break
 
 
-    def move_pacman(self, direction):
-        """Moves pacman in direction, where direction is leads pacman
-        to a valid location.
+    def move_pacman(self, directions):
+        """Moves all pacman in self.pacman_coords in directions[i] (indexed the same 
+        as self.pacman_coords), where each direction is leads pacman to a valid location.
         """
-        if direction == d.Direction.NONE:
-            # No action needed
-            return
+        for index, direction in enumerate(directions):
+            if direction == d.Direction.NONE:
+                # No action needed
+                return
 
-        new_coord = copy.deepcopy(self.pacman_coord)
-        
-        # Adjust new_coord depending on pacman's desired direction
-        if direction == d.Direction.UP:
-            new_coord.y += 1
+            new_coord = copy.deepcopy(self.pacman_coords[index])
+            
+            # Adjust new_coord depending on pacman's desired direction
+            if direction == d.Direction.UP:
+                new_coord.y += 1
 
-        elif direction == d.Direction.DOWN:
-            new_coord.y -= 1
+            elif direction == d.Direction.DOWN:
+                new_coord.y -= 1
 
-        elif direction == d.Direction.LEFT:
-            new_coord.x -= 1
+            elif direction == d.Direction.LEFT:
+                new_coord.x -= 1
 
-        elif direction == d.Direction.RIGHT:
-            new_coord.x += 1
-        
-        self.prev_pacman_coord = copy.deepcopy(self.pacman_coord)
-        self.pacman_coord = copy.deepcopy(new_coord)
+            elif direction == d.Direction.RIGHT:
+                new_coord.x += 1
+            
+            self.prev_pacman_coords[index] = copy.deepcopy(self.pacman_coords[index])
+            self.pacman_coords[index] = copy.deepcopy(new_coord)
 
 
     def move_ghost(self, ghost_id, direction):
@@ -210,17 +212,20 @@ class GPacWorld:
             3. all pills are gone
             4. time remaining is equal to zero
         """
-        if self.pacman_coord in self.ghost_coords:
-            return True
+        for pacman_index, pacman_coord in enumerate(self.pacman_coords):
+            if pacman_coord in self.ghost_coords:
+                return True
 
-        if self.prev_pacman_coord in self.ghost_coords:
-            return True
+            for ghost_index in range(self.num_ghosts):
+                if self.prev_pacman_coords[pacman_index] == self.ghost_coords[ghost_index] and self.pacman_coords[pacman_index] == self.prev_ghost_coords[ghost_index]:
+                    return True
 
         if not len(self.pill_coords):
             return True
 
         if not self.time_remaining:
             return True
+
 
         return False # The game continues
 
@@ -246,7 +251,8 @@ class GPacWorld:
         for c in wall_coords:
             world[c.x][c.y] = chars.GPacChars.WALL
 
-        world[self.pacman_coord.x][self.pacman_coord.y] = chars.GPacChars.PACMAN
+        for c in self.pacman_coords:
+            world[c.x][c.y] = chars.GPacChars.PACMAN
 
         for row in range(self.width):
             for col in range(self.height - 1, -1, -1):
@@ -300,7 +306,7 @@ class GPacWorld:
             return
 
         if random.random() <= self.fruit_spawn_prob:
-            possible_coords = copy.deepcopy(list(self.all_coords.difference(set([self.pacman_coord])).difference(self.wall_coords).difference(self.pill_coords)))
+            possible_coords = copy.deepcopy(list(self.all_coords.difference(set(self.pacman_coords)).difference(self.wall_coords).difference(self.pill_coords)))
             random.shuffle(possible_coords)
 
             for possible_fruit_coord in possible_coords:
