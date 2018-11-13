@@ -48,7 +48,7 @@ class GPDriver:
         self.population = []
         for _ in range(self.population_size):
             world = gpac_world_class.GPacWorld(self.config)
-            game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords)
+            game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords, self.get_num_adj_walls(world, world.pacman_coords[0]))
             pacman_cont = pacman_cont_class.PacmanController(self.config)
             ghosts_cont = ghosts_cont_class.GhostsController(self.config)
             game_state.update_walls(world.wall_coords)
@@ -138,7 +138,7 @@ class GPDriver:
         else:
             fruit_coord = None
 
-        individual.game_state.update(individual.world.pacman_coords, individual.world.ghost_coords, individual.world.pill_coords, fruit_coord)
+        individual.game_state.update(individual.world.pacman_coords, individual.world.ghost_coords, individual.world.pill_coords, self.get_num_adj_walls(individual.world, individual.world.pacman_coords[0]), fruit_coord)
 
 
     def move_units(self, individual):
@@ -226,3 +226,8 @@ class GPDriver:
 
             # Write to world file
             individual.world.world_file.write_to_file()
+
+
+    def get_num_adj_walls(self, world, coord):
+        """Returns the number of walls adjacent to coord in the given world."""
+        return len([c for c in world.get_adj_coords(coord) if c in world.wall_coords])

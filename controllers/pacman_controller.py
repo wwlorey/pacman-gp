@@ -144,6 +144,38 @@ class PacmanController(base_controller_class.BaseController):
         coordinate against the state evaluator.
         """
 
+        def get_nearest_distance(pacman_coord, object):
+            """Returns the distance between the given pacman coordinate
+            and the nearest instance of type object.
+            """
+
+            def get_distance(coord1, coord2):
+                """Returns the Manhattan distance between the given coordinates."""
+                if not coord1 or not coord2:
+                    return -1
+
+                return abs(coord1.x - coord2.x) + abs(coord1.y - coord2.y)
+
+
+            if object == 'ghost':
+                coords_to_search = game_state.ghost_coords
+            
+            elif object == 'pill':
+                coords_to_search = game_state.pill_coords
+
+            elif object == 'fruit' and game_state.fruit_coord:
+                coords_to_search = game_state.fruit_coord
+                
+            else:
+                coords_to_search = []
+                
+            min_distance = -1
+            for coord in coords_to_search:
+                min_distance = min(min_distance, get_distance(pacman_coord, coord))
+            
+            return min_distance
+
+        
         def evaluate_state_recursive(node):
 
             def is_last_function_node(node):
@@ -217,10 +249,10 @@ class PacmanController(base_controller_class.BaseController):
 
         evaluations = []
         for pacman_coord in pacman_coords:
-            ghost_distance = 1 #get_nearest_ghost_distance(pacman_coord)
-            pill_distance = 1 #get_nearest_pill_distance(pacman_coord)
-            fruit_distance = 1 #get_nearest_fruit_distance(pacman_coord)
-            num_adj_walls = 1 #get_num_adj_walls(pacman_coord)
+            ghost_distance = get_nearest_distance(pacman_coord, 'ghost')
+            pill_distance = get_nearest_distance(pacman_coord, 'pill')
+            fruit_distance = get_nearest_distance(pacman_coord, 'fruit')
+            num_adj_walls = game_state.num_adj_walls
 
             evaluations.append(evaluate_state_recursive(self.state_evaluator.root))
         
