@@ -46,7 +46,7 @@ class Node:
         it has no children), False otherwise.
         """
         return not len(self.children)
-        
+
     
     def add_child(self, child_value):
         """Adds the given child to self.children, while maintaining
