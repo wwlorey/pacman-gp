@@ -77,6 +77,7 @@ class GPDriver:
 
         This should be called after each evaluation.
         """
+        individual.fitness = individual.world.score
         self.check_update_log_world_files(individual)
         self.eval_count += 1
 

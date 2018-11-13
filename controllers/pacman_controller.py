@@ -302,4 +302,3 @@ class PacmanController(base_controller_class.BaseController):
 
 
         print(visualize_recursive(self.state_evaluator.root))
-
