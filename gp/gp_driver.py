@@ -20,6 +20,7 @@ class GPDriver:
 
         self.population_size = int(self.config.settings['mu'])
         self.child_population_size = int(self.config.settings['lambda'])
+        self.num_parents = int(self.config.settings['num parents'])
 
         self.run_count = 1
         self.eval_count = 1
@@ -96,7 +97,7 @@ class GPDriver:
 
 
     def select_parents(self):
-        """Chooses which parents from the population will breed.
+        """TODO: Chooses which parents from the population will breed.
 
         Depending on the parent selection configuration, one of the three following 
         methods is used to select parents:
@@ -109,7 +110,7 @@ class GPDriver:
         
 
     def recombine(self):
-        """Breeds lambda (offspring pool size) children using sub-tree crossover 
+        """TODO: Breeds lambda (offspring pool size) children using sub-tree crossover 
         from the existing parent population. The resulting children are stored in 
         self.children.
         """
@@ -117,12 +118,12 @@ class GPDriver:
         
 
     def mutate(self):
-        """Probabilistically performs mutation on each child in the child population."""
+        """TODO: Probabilistically performs mutation on each child in the child population."""
         pass
         
 
     def select_for_survival(self):
-        """Survivors are selected based on the following configurable methods:
+        """TODO: Survivors are selected based on the following configurable methods:
             1. k-tournament selection without replacement
             2. Truncation
 
