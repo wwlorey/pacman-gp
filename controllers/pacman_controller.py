@@ -11,8 +11,11 @@ terminals = nodes_classes.TerminalNodes
 functions = nodes_classes.FunctionNodes
 
 
+# Constant declarations
 POSSIBLE_MOVES = [d.Direction.NONE, d.Direction.UP, d.Direction.DOWN, 
     d.Direction.LEFT, d.Direction.RIGHT]
+
+NUM_POSSIBLE_CHILDREN = 2
 
 
 class PacmanController(base_controller_class.BaseController):
@@ -29,10 +32,36 @@ class PacmanController(base_controller_class.BaseController):
 
     def init_state_evaluator(self):
         """Initializes this controller's state evaluator tree."""
-        # TODO: For now, this only creates a tree w/ function root and two children
+        target_height_met = False
+
+        def init_state_evaluator_recursive(parent_node, current_depth=2):
+            nonlocal target_height_met
+
+            if current_depth == target_height:
+                # End this branch
+                target_height_met = True
+                children = [self.get_rand_terminal_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
+                parent_node.add_children(children)
+                return
+            
+            if target_height_met and current_depth < target_height and random.random() < float(self.config.settings['premature end prob']):
+                # Prematurely end this branch
+                children = [self.get_rand_terminal_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
+                parent_node.add_children(children)
+                return
+
+            # Continue constructing the tree
+            children = [self.get_rand_function_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
+            parent_node.add_children(children)
+
+            for child in parent_node.children:
+                init_state_evaluator_recursive(child, current_depth + 1)
+
+
+        target_height = random.randint(2, int(self.config.settings['max tree generation height']))
         self.state_evaluator = tree_class.Tree(self.config, self.get_rand_function_node())
-        self.state_evaluator.root.add_children([self.get_rand_terminal_node(), self.get_rand_terminal_node()])
-        self.state_evaluator.visualize()
+
+        init_state_evaluator_recursive(self.state_evaluator.root)
 
 
     def get_rand_terminal_node(self):
@@ -42,6 +71,8 @@ class PacmanController(base_controller_class.BaseController):
         if terminal_node == terminals.FP_CONSTANT:
             # Return a floating point constant
             return random.uniform(0, self.max_fp_constant)
+
+        return terminal_node
 
 
     def get_rand_function_node(self):
@@ -113,7 +144,52 @@ class PacmanController(base_controller_class.BaseController):
         coordinate against the state evaluator.
         """
         if not pacman_coord:
-            pacman_coord = game_state.pacman_coord
+            pacman_coords = game_state.pacman_coords
+
+        else:
+            pacman_coords = [pacman_coord]
 
         return random.random()
 
+    def visualize(self):
+        """Prints a function representing the state evaluator."""
+
+        def get_symbol(node):
+            if node.value == terminals.PACMAN_GHOST_DIST:
+                return 'ghost distance'
+
+            if node.value == terminals.PACMAN_PILL_DIST:
+                return 'pill distance'
+
+            if node.value == terminals.PACMAN_FRUIT_DIST:
+                return 'fruit distance'
+
+            if node.value == terminals.NUM_ADJ_WALLS:
+                return 'num adj walls'
+                
+            if node.value == functions.ADD:
+                return '+'
+                
+            if node.value == functions.SUBTRACT:
+                return '-'
+                
+            if node.value == functions.MULTIPLY:
+                return '*'
+                
+            if node.value == functions.DIVIDE:
+                return '/'
+                
+            if node.value == functions.RANDOM_FLOAT:
+                return 'rand'
+
+            return str(node.value)
+
+
+        def visualize_recursive(node):
+            if node.is_leaf():
+                return get_symbol(node)
+
+            return '( ' + visualize_recursive(node.left()) + ' ' + get_symbol(node) + ' ' + visualize_recursive(node.right()) + ' )'
+        
+
+        print(visualize_recursive(self.state_evaluator.root))

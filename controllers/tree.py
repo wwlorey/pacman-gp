@@ -6,9 +6,9 @@ MAX_NODE_ID = 10000
 
 class Node:
     def __init__(self, value=None):
-        """Initializes the Node class."""
+        """Initializes the Node class (part of the binary Tree class)."""
         self.value = value
-        self.children = set([])
+        self.children = []
         self.id = random.randint(0, MAX_NODE_ID)
 
 
@@ -23,11 +23,37 @@ class Node:
     def __str__(self):
         """Prints this node to the screen"""
         return str(self.value)
+    
+    
+    def left(self):
+        """Returns this node's left child."""
+        if len(self.children):
+            return self.children[0]
+        
+        return None
+
+
+    def right(self):
+        """Returns this node's right child."""
+        if len(self.children):
+            return self.children[1]
+        
+        return None
+    
+
+    def is_leaf(self):
+        """Returns True if this node is a leaf node (i.e.
+        it has no children), False otherwise.
+        """
+        return not len(self.children)
         
     
     def add_child(self, child_value):
-        """Adds the given child to self.children."""
-        self.children.add(Node(child_value))
+        """Adds the given child to self.children, while maintaining
+        the binary tree property.
+        """
+        if len(self.children) < 2:
+            self.children.append(Node(child_value))
 
 
     def add_children(self, children_values):
@@ -38,12 +64,12 @@ class Node:
 
     def kill_all_children(self):
         """Removes all children from the this node."""
-        self.children = set([])
+        self.children = []
         
 
 class Tree:
     def __init__(self, config, root_value=None):
-        """Initializes the Tree class."""
+        """Initializes the (binary) Tree class."""
         self.root = Node(root_value)
 
 

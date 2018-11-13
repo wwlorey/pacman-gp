@@ -11,4 +11,3 @@ class BaseController:
         Returns False otherwise.
         """
         return not coord in game_state.wall_coords and coord.x >= 0 and coord.y >= 0 and coord.x < int(self.config.settings['width']) and coord.y < int(self.config.settings['height'])
-

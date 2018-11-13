@@ -82,7 +82,7 @@ class GPDriver:
 
 
     def evaluate(self, population):
-        """Evaluates all population members (worlds) given in population by running
+        """Evaluates all population members given in population by running
         each world's game until completion. 
         """
         for individual in population:
