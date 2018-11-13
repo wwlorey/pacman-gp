@@ -1,6 +1,7 @@
 import controllers.game_state as game_state_class
 import controllers.ghosts_controller as ghosts_cont_class
 import controllers.pacman_controller as pacman_cont_class
+import gp.gpac_world_individual as gpac_world_individual_class
 import gp.log as log_class
 import random
 import util.seed as seed_class
@@ -17,6 +18,9 @@ class GPDriver:
 
         self.seed = seed_class.Seed(self.config)
 
+        self.population_size = int(self.config.settings['mu'])
+        self.child_population_size = int(self.config.settings['lambda'])
+
         self.run_count = 1
         self.eval_count = 1
         self.local_best_score = -1
@@ -25,25 +29,9 @@ class GPDriver:
 
         self.global_best_score = -1
 
-        self.gpac_world = gpac_world_class.GPacWorld(self.config, initial_instance=True)
-
-        self.pacman_cont = pacman_cont_class.PacmanController(self.config)
-        self.ghosts_cont = ghosts_cont_class.GhostsController(self.config)
-
-        self.game_state = game_state_class.GameState(self.gpac_world.pacman_coords, self.gpac_world.ghost_coords, self.gpac_world.pill_coords)
-
         self.population = []
         self.parents = []
         self.children = []
-
-
-    def execute_turn(self):
-        """Executes one game turn.
-
-        First, all units are moved. Second, the game state is updated.
-        """
-        self.update_game_state()
-        self.move_units()
 
 
     def begin_run(self):
@@ -56,6 +44,17 @@ class GPDriver:
         self.local_best_score = -1
         self.log.write_run_header(self.run_count)
 
+        # Initialize the population
+        self.population = []
+        for _ in range(self.population_size):
+            world = gpac_world_class.GPacWorld(self.config)
+            game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords)
+            pacman_cont = pacman_cont_class.PacmanController(self.config)
+            ghosts_cont = ghosts_cont_class.GhostsController(self.config)
+            game_state.update_walls(world.wall_coords)
+
+            self.population.append(gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont))
+
 
     def end_run(self):
         """Increments the run count by one.
@@ -65,23 +64,20 @@ class GPDriver:
         self.run_count += 1
 
 
-    def begin_eval(self):
-        """(Re)initializes the GPacWorld class member variable and adds walls to the
-        game state.
+    def begin_eval(self, individual):
+        """TODO: is this necessary?
         
-        This should be called prior to each evaluation.
-        """
-        self.gpac_world = gpac_world_class.GPacWorld(self.config)
-        self.game_state.update_walls(self.gpac_world.wall_coords)
+        This should be called prior to each evaluation."""
+        pass
 
 
-    def end_eval(self):
+    def end_eval(self, individual):
         """Conditionally updates the log and world files and increments 
         the evaluation count.
 
         This should be called after each evaluation.
         """
-        self.check_update_log_world_files()
+        self.check_update_log_world_files(individual)
         self.eval_count += 1
 
 
@@ -89,7 +85,13 @@ class GPDriver:
         """Evaluates all population members (worlds) given in population by running
         each world's game until completion. 
         """
-        pass
+        for individual in population:
+            self.begin_eval(individual)
+            
+            while self.check_game_over(individual):
+                self.move_units(individual)
+
+            self.end_eval(individual)
 
 
     def select_parents(self):
@@ -128,55 +130,55 @@ class GPDriver:
         pass
 
 
-    def update_game_state(self):
+    def update_game_state(self, individual):
         """Updates the state of the game *before* all characters have moved."""
-        if len(self.gpac_world.fruit_coord):
-            fruit_coord = self.gpac_world.fruit_coord
+        if len(individual.world.fruit_coord):
+            fruit_coord = individual.world.fruit_coord
 
         else:
             fruit_coord = None
 
-        self.game_state.update(self.gpac_world.pacman_coords, self.gpac_world.ghost_coords, self.gpac_world.pill_coords, fruit_coord)
+        individual.game_state.update(individual.world.pacman_coords, individual.world.ghost_coords, individual.world.pill_coords, fruit_coord)
 
 
-    def move_units(self):
-        """Moves all units in self.gpac_world based on the unit controller moves.
+    def move_units(self, individual):
+        """Moves all units in individual.world based on the unit controller moves.
         
         Before units are moved, a fruit probabilistically spawns and the game state
         is updated.
 
         After units are moved, game variables are updated.
         """
-        self.gpac_world.randomly_spawn_fruit()
+        individual.world.randomly_spawn_fruit()
 
-        self.update_game_state()
+        self.update_game_state(individual)
 
-        self.gpac_world.move_pacman(self.pacman_cont.get_move(self.game_state))
+        individual.world.move_pacman(individual.pacman_cont.get_move(individual.game_state))
 
-        for ghost_id in range(len(self.gpac_world.ghost_coords)):
-            self.gpac_world.move_ghost(ghost_id, self.ghosts_cont.get_move(ghost_id, self.game_state))
+        for ghost_id in range(len(individual.world.ghost_coords)):
+            individual.world.move_ghost(ghost_id, individual.ghosts_cont.get_move(ghost_id, individual.game_state))
 
         # Update time remaining
-        self.gpac_world.time_remaining -= 1
+        individual.world.time_remaining -= 1
 
-        for pacman_coord in self.gpac_world.pacman_coords:
+        for pacman_coord in individual.world.pacman_coords:
             # Update pills
-            if pacman_coord in self.gpac_world.pill_coords:
-                self.gpac_world.pill_coords.remove(pacman_coord)
-                self.gpac_world.num_pills_consumed += 1
+            if pacman_coord in individual.world.pill_coords:
+                individual.world.pill_coords.remove(pacman_coord)
+                individual.world.num_pills_consumed += 1
 
             # Update fruit
-            if pacman_coord in self.gpac_world.fruit_coord:
-                self.gpac_world.fruit_coord.remove(pacman_coord)
-                self.gpac_world.num_fruit_consumed += 1
+            if pacman_coord in individual.world.fruit_coord:
+                individual.world.fruit_coord.remove(pacman_coord)
+                individual.world.num_fruit_consumed += 1
 
         # Update score
-        self.gpac_world.update_score()
+        individual.world.update_score()
 
         # Update the world state
-        self.gpac_world.world_file.save_snapshot(self.gpac_world.pacman_coords,
-            self.gpac_world.ghost_coords, self.gpac_world.fruit_coord, 
-            self.gpac_world.time_remaining, self.gpac_world.score)
+        individual.world.world_file.save_snapshot(individual.world.pacman_coords,
+            individual.world.ghost_coords, individual.world.fruit_coord, 
+            individual.world.time_remaining, individual.world.score)
 
 
     def decide_termination(self):
@@ -192,33 +194,35 @@ class GPDriver:
         return True
 
 
-    def check_game_over(self):
-        """Returns False if the game is over (allowing for a loop to terminate), 
+    def check_game_over(self, individual):
+        """Returns False if the game is over for the given individual (allowing for a loop to terminate), 
         and True otherwise.
 
         The conditions for game over are seen in check_game_over() in the GPacWorld class.
         """
-        if self.gpac_world.check_game_over():
+        if individual.world.check_game_over():
             return False
 
         return True
 
 
-    def check_update_log_world_files(self):
+    def check_update_log_world_files(self, individual):
         """Writes a new log file entry iff a new local best score is found and writes
         transcript of this run to the world file iff it had the 
-        global best score."""
+        global best score.
+        
+        TODO: update this
+        """
         # Determine if a new local best score (fitness) has been found
-        if self.gpac_world.score > self.local_best_score:
-            self.local_best_score = self.gpac_world.score
+        if individual.world.score > self.local_best_score:
+            self.local_best_score = individual.world.score
 
             # Write log file row
             self.log.write_run_data(self.eval_count, self.local_best_score)
 
         # Determine if a new global best score has been found
-        if self.gpac_world.score > self.global_best_score:
-            self.global_best_score = self.gpac_world.score
+        if individual.world.score > self.global_best_score:
+            self.global_best_score = individual.world.score
 
             # Write to world file
-            self.gpac_world.world_file.write_to_file()
-
+            individual.world.world_file.write_to_file()

@@ -26,8 +26,6 @@ if __name__ == '__main__':
         gp_driver.evaluate(gp_driver.population)
 
         while gp_driver.decide_termination():
-            gp_driver.begin_eval()
-
             gp_driver.select_parents()
 
             gp_driver.recombine()
@@ -37,11 +35,6 @@ if __name__ == '__main__':
             gp_driver.evaluate(gp_driver.children)
 
             gp_driver.select_for_survival()
-
-            while gp_driver.check_game_over():
-                gp_driver.execute_turn()
-
-            gp_driver.end_eval()
 
         gp_driver.end_run()
 
