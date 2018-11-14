@@ -4,6 +4,7 @@ import controllers.nodes as nodes_classes
 import controllers.tree as tree_class
 import copy
 import random
+import world.coordinate as coord_class
 
 
 # Assign new node class names
@@ -122,7 +123,7 @@ class PacmanController(base_controller_class.BaseController):
             best_eval_direction = d.Direction.NONE
 
             for direction in POSSIBLE_MOVES:
-                tmp_pacman_coord = copy.deepcopy(pacman_coord)
+                tmp_pacman_coord = coord_class.Coordinate(pacman_coord.x, pacman_coord.y)
 
                 if move_pacman(tmp_pacman_coord, direction):
                     eval_result = self.evaluate_state(game_state, tmp_pacman_coord)[0]

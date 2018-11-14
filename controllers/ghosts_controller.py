@@ -2,6 +2,7 @@ import controllers.base_controller as base_controller_class
 import controllers.direction as d
 import copy
 import random
+import world.coordinate as coord_class
 
 
 class GhostsController(base_controller_class.BaseController):
@@ -25,7 +26,7 @@ class GhostsController(base_controller_class.BaseController):
             direction_to_try = random.choice(self.POSSIBLE_MOVES)
 
             # Determine if this direction is valid
-            new_coord = copy.deepcopy(game_state.ghost_coords[ghost_id])
+            new_coord = coord_class.Coordinate(game_state.ghost_coords[ghost_id].x, game_state.ghost_coords[ghost_id].y)
             if direction_to_try == d.Direction.UP:
                 new_coord.y += 1
 

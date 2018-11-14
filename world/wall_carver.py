@@ -47,7 +47,7 @@ class WallCarver:
             self.get_travel_distance()
             self.get_direction()
 
-        new_coord = copy.deepcopy(self.coord)
+        new_coord = coord_class.Coordinate(self.coord.x, self.coord.y)
 
         if self.direction == d.Direction.UP:
             new_coord.y += 1
@@ -62,7 +62,7 @@ class WallCarver:
             new_coord.x += 1
         
         if new_coord.x >= 0 and new_coord.y >= 0 and new_coord.x < self.max_x and new_coord.y < self.max_y:
-            self.coord = copy.deepcopy(new_coord)
+            self.coord = coord_class.Coordinate(new_coord.x, new_coord.y)
 
         self.travel_distance -= 1
 
@@ -84,4 +84,3 @@ class WallCarver:
     def mark_for_death(self):
         """Marks a WallCarver for death."""
         self.marked_for_death = True
-

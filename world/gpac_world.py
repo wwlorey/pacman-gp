@@ -29,9 +29,7 @@ class GPacWorld:
 
         # Create initial world attributes
         self.pacman_coords= [coord_class.Coordinate(0, self.height - 1) for _ in range(self.num_pacmen)]
-        self.prev_pacman_coords = copy.deepcopy(self.pacman_coords)
         self.ghost_coords = [coord_class.Coordinate(self.width - 1, 0) for _ in range(self.num_ghosts)]
-        self.prev_ghost_coords = copy.deepcopy(self.ghost_coords)
         self.wall_coords = set([])
         self.pill_coords = set([])
         self.fruit_coord = set([])
@@ -40,6 +38,14 @@ class GPacWorld:
         self.num_pills_consumed = 0
         self.num_fruit_consumed = 0
         self.score = 0
+
+        self.prev_pacman_coords = []
+        for pacman_coord in self.pacman_coords:
+            self.prev_pacman_coords.append(coord_class.Coordinate(pacman_coord.x, pacman_coord.y))
+
+        self.prev_ghost_coords = []
+        for ghost_coord in self.ghost_coords:
+            self.prev_ghost_coords.append(coord_class.Coordinate(ghost_coord.x, ghost_coord.y))
         
         # Create helper set of all coordinates
         self.all_coords = set([])
@@ -85,7 +91,10 @@ class GPacWorld:
             assign_unit_starting_coords(wall_carvers)
 
             # Get walls to carve
-            walls_to_carve = copy.deepcopy(self.all_coords)
+            walls_to_carve = []
+            for coord in self.all_coords:
+                walls_to_carve.append(coord_class.Coordinate(coord.x, coord.y))
+
             past_seen_carved_coords = set([])
 
             # Calculate wall density
@@ -157,7 +166,7 @@ class GPacWorld:
                 # No action needed
                 return
 
-            new_coord = copy.deepcopy(self.pacman_coords[index])
+            new_coord = coord_class.Coordinate(self.pacman_coords[index].x, self.pacman_coords[index].y)
             
             # Adjust new_coord depending on pacman's desired direction
             if direction == d.Direction.UP:
@@ -172,8 +181,8 @@ class GPacWorld:
             elif direction == d.Direction.RIGHT:
                 new_coord.x += 1
             
-            self.prev_pacman_coords[index] = copy.deepcopy(self.pacman_coords[index])
-            self.pacman_coords[index] = copy.deepcopy(new_coord)
+            self.prev_pacman_coords[index] = coord_class.Coordinate(self.pacman_coords[index].x, self.pacman_coords[index].y)
+            self.pacman_coords[index] = coord_class.Coordinate(new_coord.x, new_coord.y)
 
 
     def move_ghost(self, ghost_id, direction):
@@ -184,7 +193,7 @@ class GPacWorld:
             # This ghost does not exist
             return
 
-        new_coord = copy.deepcopy(self.ghost_coords[ghost_id])
+        new_coord = coord_class.Coordinate(self.ghost_coords[ghost_id].x, self.ghost_coords[ghost_id].y)
         
         # Adjust new_coord depending on pacman's desired direction
         if direction == d.Direction.UP:
@@ -199,8 +208,8 @@ class GPacWorld:
         elif direction == d.Direction.RIGHT:
             new_coord.x += 1
         
-        self.prev_ghost_coords[ghost_id] = copy.deepcopy(self.ghost_coords[ghost_id])
-        self.ghost_coords[ghost_id] = copy.deepcopy(new_coord)
+        self.prev_ghost_coords[ghost_id] = coord_class.Coordinate(self.ghost_coords[ghost_id].x, self.ghost_coords[ghost_id].y)
+        self.ghost_coords[ghost_id] = coord_class.Coordinate(new_coord.x, new_coord.y)
 
 
     def check_game_over(self):
@@ -306,7 +315,10 @@ class GPacWorld:
             return
 
         if random.random() <= self.fruit_spawn_prob:
-            possible_coords = copy.deepcopy(list(self.all_coords.difference(set(self.pacman_coords)).difference(self.wall_coords).difference(self.pill_coords)))
+            possible_coords = []
+            for coord in list(self.all_coords.difference(set(self.pacman_coords)).difference(self.wall_coords).difference(self.pill_coords)):
+                possible_coords.append(coord_class.Coordinate(coord.x, coord.y))
+
             random.shuffle(possible_coords)
 
             for possible_fruit_coord in possible_coords:
