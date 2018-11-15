@@ -1,156 +1,152 @@
+import math
 import random
 
 
-MAX_NODE_ID = 10000
+STARTING_TREE_SIZE = 64
 
 
-class Node:
-    def __init__(self, value=None):
-        """Initializes the Node class (part of the binary Tree class)."""
+class TreeNode:
+    def __init__(self, index, value):
+        """Initializes the TreeNode class."""
         self.value = value
-        self.children = []
-        self.id = random.randint(0, MAX_NODE_ID)
 
-
-    def __eq__(self, other):
-        return self.value == other.value and self.children == other.children
-
-
-    def __hash__(self):
-        return self.id
-
+        # Note: index represents this node's index in the Tree list
+        self.index = index
+    
 
     def __str__(self):
-        """Prints this node to the screen"""
         return str(self.value)
-    
-    
-    def left(self):
-        """Returns this node's left child."""
-        if len(self.children):
-            return self.children[0]
-        
-        return None
-
-
-    def right(self):
-        """Returns this node's right child."""
-        if len(self.children):
-            return self.children[1]
-        
-        return None
-    
-
-    def is_leaf(self):
-        """Returns True if this node is a leaf node (i.e.
-        it has no children), False otherwise.
-        """
-        return not len(self.children)
-
-    
-    def add_child(self, child_value):
-        """Adds the given child to self.children, while maintaining
-        the binary tree property.
-        """
-        if len(self.children) < 2:
-            self.children.append(Node(child_value))
-
-
-    def add_children(self, children_values):
-        """Adds the given list of children to self.children."""
-        for child_value in children_values:
-            self.add_child(child_value)
-
-
-    def kill_all_children(self):
-        """Removes all children from the this node."""
-        self.children = []
         
 
 class Tree:
     def __init__(self, config, root_value=None):
         """Initializes the (binary) Tree class."""
-        self.root = Node(root_value)
+        self.list = [TreeNode(index, None) for index in range(STARTING_TREE_SIZE)]
+        self.list[0] = TreeNode(0, root_value)
+
+    
+    def __str__(self):
+        ret = '['
+        for item in self.list:
+            ret += str(item) + ', '
+        
+        ret += ']'
+
+        return ret
+    
+
+    def __len__(self):
+        return len(self.list)
+
+
+    def __getitem__(self, index):
+        return self.list[index]
+
+
+    def __setitem__(self, index, value):
+        self.list[index] = value
+
+
+    def get_parent(self, node):
+        """Returns the parent node of the given node.
+
+        If the parent node does not exist, None is returned.
+        """
+        parent_index = node.index // 2
+
+        if parent_index < 0:
+            return TreeNode(-1, None)
+        
+        return self.list[parent_index]
+    
+
+    def get_left_child(self, node):
+        """Returns the left child of the given node.
+
+        If the left child does not exist, None is returned.
+        """
+        left_child_index = self.get_left_child_index(node)
+
+        if left_child_index >= len(self.list) or not self.list[left_child_index]:
+            return TreeNode(-1, None)
+        
+        return self.list[left_child_index]
+
+
+    def get_left_child_index(self, node):
+        """Returns the left child index of the given node. """
+        return 2 * (1 + node.index) - 1
+
+
+    def get_right_child(self, node):
+        """Returns the right child of the given node.
+
+        If the right child does not exist, None is returned.
+        """
+        right_child_index = self.get_right_child_index(node)
+
+        if right_child_index >= len(self.list) or not self.list[right_child_index]:
+            return TreeNode(-1, None)
+        
+        return self.list[right_child_index]
+
+
+    def get_right_child_index(self, node):
+        """Returns the right child index of the given node."""
+        return 2 * (node.index + 1)
 
 
     def get_height(self):
         """Returns the maximum depth (height) of this tree."""
+        counter = 0
 
-        def get_height_recursive(node, depth=1):
-            if not len(node.children):
-                # This is a leaf node
-                return depth
+        for n in self.list[::-1]:
+            if n != None:
+                return math.ceil(math.log2(len(self.list) - counter))
 
-            # This is not a leaf node
-            max_depth = depth
-            for child in node.children:
-                max_depth = max(child, depth + 1)
-
-            return max_depth
-
-        return get_height_recursive(self.root)
+            counter += 1
+        
+        return 1
 
 
-    def add_node(self, value, parent_node=None):
+    def add_node(self, parent_node=TreeNode(0, None), value=None):
         """Adds a new node with provided value to the node denoted by
-        parent_node.
+        parent_node, first trying to add as a left child node, then as a right child node.
 
         If parent_node is not specified, the child node is added to the root node.
         """
-        if not parent_node:
-            parent_node = self.root
         
-        parent_node.add_child(value)
+        def add_node_at_index(index, value):
+            """Creates a new TreeNode object in self.list at index.
+
+            Allocates more space for the tree list as needed.
+            """
+            if index >= len(self.list):
+                # Allocate more space for this list
+                self.list = self.list + [TreeNode(index, None) for index in range(len(self.list), len(self.list) * 2)]
+
+            self.list[index] = TreeNode(index, value)
 
 
-    def remove_subtree(self, subtree_parent=None):
-        """Removes the subtree with root denoted by subtree_parent (not including the root).
+        left_child_index = self.get_left_child(parent_node)
+        if not left_child_index.value:
+            add_node_at_index(self.get_left_child_index(parent_node), value)
+            return True
 
-        If subtree_parent is not provided, self.root's children are removed.
-        """
-        if not subtree_parent:
-            subtree_parent = self.root
-
-        subtree_parent.kill_all_children()
-
-
-    def get_node_list(self):
-        """Returns a list of all nodes in the tree."""
-        # Create a queue of nodes
-        q = []
-        q.append(self.root)
-
-        node_list = []
-
-        while len(q):
-            node = q.pop(0)
-
-            node_list.append(node)
-
-            for child in node.children:
-                q.append(child)
-
-        return node_list
+        right_child_index = self.get_right_child(parent_node)
+        if not right_child_index.value:
+            add_node_at_index(self.get_right_child_index(parent_node), value)
+            return True
+        
+        return False
 
 
-    def visualize(self):
-        """Prints this tree to the screen."""
-        # Create a queue of (node, depth)
-        q = []
-        prev_depth = 1
-        q.append((self.root, prev_depth))
+    def get_root(self):
+        """Returns the root node of the tree."""
+        return self.list[0]
 
-        while len(q):
-            node, depth = q.pop(0)
 
-            if depth > prev_depth:
-                prev_depth = depth
-                print()
-
-            print(str(node), end=', ')
-
-            for child in node.children:
-                q.append((child, depth + 1))
-
-        print()
-
+    def is_leaf(self, node):
+        """Returns if this node is a leaf node (i.e. it has no children)."""
+        return not self.get_left_child(node).value and not self.get_right_child(node).value
+    

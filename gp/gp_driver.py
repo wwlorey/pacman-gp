@@ -1,6 +1,8 @@
 import controllers.game_state as game_state_class
 import controllers.ghosts_controller as ghosts_cont_class
 import controllers.pacman_controller as pacman_cont_class
+import controllers.tree as tree
+import copy
 import gp.gpac_world_individual as gpac_world_individual_class
 import gp.log as log_class
 import random
@@ -55,8 +57,6 @@ class GPDriver:
             game_state.update_walls(world.wall_coords)
 
             self.population.append(gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont))
-
-            pacman_cont.visualize()
 
 
     def end_run(self):
@@ -120,35 +120,33 @@ class GPDriver:
         def breed(parent_a, parent_b):
             """Performs sub-tree crossover on parent_a and parent_b returning the child tree."""
 
-            def copy_subtree_recursive(node_a, node_b, count = 0):
-                """Copies node_b and all of node_b's children into node_a."""
-                if node_b.is_leaf():
-                    node_a.children = []
+            def crossover_recursive(receiver_index, donator_index):
+                if receiver_index < len(child_pacman_cont.state_evaluator) and donator_index < len(parent_pacman_cont.state_evaluator):
                     return
+                
+                child_pacman_cont.state_evaluator[receiver_index] = tree.TreeNode(receiver_index, parent_pacman_cont.state_evaluator[donator_index].value)
+                crossover_recursive(child_pacman_cont.state_evaluator.get_left_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_left_child_index(donator_index))
+                crossover_recursive(child_pacman_cont.state_evaluator.get_right_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_right_child_index(donator_index))
 
-                node_a.add_children([node.value for node in node_b.children])
-                print(node_a)
-
-                copy_subtree_recursive(node_a.left(), node_b.left(), count + 1)
-                copy_subtree_recursive(node_a.right(), node_b.right(), count + 1)
-
-
-            # Generate a list of each parent's state evaluator nodes
-            node_list_a = parent_a.pacman_cont.state_evaluator.get_node_list()
-            node_list_b = parent_b.pacman_cont.state_evaluator.get_node_list()
 
             # Choose a random node (crossover point) from each state evaluator node list
-            crossover_node_a = node_list_a[random.randrange(0, len(node_list_a))]
-            crossover_node_b = node_list_b[random.randrange(0, len(node_list_b))]
-            insertion_node = tree.Node(crossover_node_a.value)
+            crossover_node_a = parent_a.pacman_cont.state_evaluator[random.choices([n for n in parent_a.pacman_cont.state_evaluator if n.value])[0].index]
+            crossover_node_b = parent_b.pacman_cont.state_evaluator[random.choices([n for n in parent_b.pacman_cont.state_evaluator if n.value])[0].index]
 
+            child_pacman_cont = copy.copy(parent_a.pacman_cont)
+            parent_pacman_cont = parent_b.pacman_cont
 
-            crossover_node_a.value = crossover_node_b.value
-            copy_subtree_recursive(crossover_node_a, crossover_node_b)
+            # Extend the child's state evaluator if necessary
+            if len(child_pacman_cont.state_evaluator) < len(parent_a.pacman_cont.state_evaluator):
+                child_pacman_cont.state_evaluator = child_pacman_cont.state_evaluator + [tree.TreeNode(index, None) for index in range(len(child_pacman_cont.state_evaluator), len(parent_a.pacman_cont.state_evaluator))]
 
+            # Perform sub-tree crossover
+            crossover_recursive(crossover_node_a.index, crossover_node_b.index)
+
+            # Finish generating the child
             world = gpac_world_class.GPacWorld(self.config)
             game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords, self.get_num_adj_walls(world, world.pacman_coords[0]))
-            pacman_cont = parent_a.pacman_cont
+            pacman_cont = child_pacman_cont
             ghosts_cont = parent_a.ghosts_cont
             game_state.update_walls(world.wall_coords)
 
@@ -162,10 +160,10 @@ class GPDriver:
         for _ in range(self.child_population_size):
             # Select parents with replacement
             # Note: this implementation allows for parent_a and parent_b to be the same genotype
-            parent_a = self.parents[random.randint(0, len(self.parents) - 1)]
-            parent_b = self.parents[random.randint(0, len(self.parents) - 1)]
+            parent_a = self.parents[random.randrange(0, len(self.parents))]
+            parent_b = self.parents[random.randrange(0, len(self.parents))]
 
-            # Produce a child
+            # Breed a child
             self.children.append(breed(parent_a, parent_b))
         
 
@@ -188,7 +186,6 @@ class GPDriver:
         else:
             # Default to plus survival strategy
             selection_pool = self.population + self.children
-
 
         if self.config.settings.getboolean('use k tournament survival selection'):
             # Use k-tournament for survival selection without replacement

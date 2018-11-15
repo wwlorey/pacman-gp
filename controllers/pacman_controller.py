@@ -12,11 +12,8 @@ terminals = nodes_classes.TerminalNodes
 functions = nodes_classes.FunctionNodes
 
 
-# Constant declarations
 POSSIBLE_MOVES = [d.Direction.NONE, d.Direction.UP, d.Direction.DOWN, 
     d.Direction.LEFT, d.Direction.RIGHT]
-
-NUM_POSSIBLE_CHILDREN = 2
 
 
 class PacmanController(base_controller_class.BaseController):
@@ -41,28 +38,28 @@ class PacmanController(base_controller_class.BaseController):
             if current_depth == target_height:
                 # End this branch
                 target_height_met = True
-                children = [self.get_rand_terminal_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
-                parent_node.add_children(children)
+                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
                 return
             
             if target_height_met and current_depth < target_height and random.random() < float(self.config.settings['premature end prob']):
                 # Prematurely end this branch
-                children = [self.get_rand_terminal_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
-                parent_node.add_children(children)
+                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
                 return
 
             # Continue constructing the tree
-            children = [self.get_rand_function_node() for _ in range(NUM_POSSIBLE_CHILDREN)]
-            parent_node.add_children(children)
+            self.state_evaluator.add_node(parent_node, self.get_rand_function_node())
+            self.state_evaluator.add_node(parent_node, self.get_rand_function_node())
 
-            for child in parent_node.children:
-                init_state_evaluator_recursive(child, current_depth + 1)
+            init_state_evaluator_recursive(self.state_evaluator.get_left_child(parent_node), current_depth + 1)
+            init_state_evaluator_recursive(self.state_evaluator.get_right_child(parent_node), current_depth + 1)
 
 
-        target_height = 2 # random.randint(2, int(self.config.settings['max tree generation height']))
+        target_height = random.randint(2, int(self.config.settings['max tree generation height']))
         self.state_evaluator = tree_class.Tree(self.config, self.get_rand_function_node())
 
-        init_state_evaluator_recursive(self.state_evaluator.root)
+        init_state_evaluator_recursive(self.state_evaluator.get_root())
 
 
     def get_rand_terminal_node(self):
@@ -183,10 +180,10 @@ class PacmanController(base_controller_class.BaseController):
                 """Returns True if this node's children are terminal nodes,
                 False otherwise.
                 """
-                if not len(node.children):
+                if not self.state_evaluator.is_leaf(node):
                     return False
                 
-                return node.children[0] in [node for node in terminals]
+                return self.state_evaluator.get_left_child().value in [n for n in terminals]
         
 
             def get_fp(node):
@@ -233,13 +230,13 @@ class PacmanController(base_controller_class.BaseController):
                     return operands[0] - operands[1]
 
 
-            if not node.children:
+            if self.state_evaluator.is_leaf(node):
                 return get_fp(node)
 
             if is_last_function_node(node):
                 return evaluate(node.value, [node.left(), node.right()])
             
-            return evaluate(node.value, [evaluate_state_recursive(node.left()), evaluate_state_recursive(node.right())])
+            return evaluate(node.value, [evaluate_state_recursive(self.state_evaluator.get_left_child(node)), evaluate_state_recursive(self.state_evaluator.get_right_child(node))])
 
 
         if not pacman_coord:
@@ -255,7 +252,7 @@ class PacmanController(base_controller_class.BaseController):
             fruit_distance = get_nearest_distance(pacman_coord, 'fruit')
             num_adj_walls = game_state.num_adj_walls
 
-            evaluations.append(evaluate_state_recursive(self.state_evaluator.root))
+            evaluations.append(evaluate_state_recursive(self.state_evaluator.get_root()))
         
         return evaluations
 
@@ -296,10 +293,21 @@ class PacmanController(base_controller_class.BaseController):
 
 
         def visualize_recursive(node):
-            if node.is_leaf():
+            if self.state_evaluator.is_leaf(node):
                 return get_symbol(node)
 
-            return '( ' + visualize_recursive(node.left()) + ' ' + get_symbol(node) + ' ' + visualize_recursive(node.right()) + ' )'
+            return '( ' + visualize_recursive(self.state_evaluator.get_left_child(node)) + ' ' + get_symbol(node) + ' ' + visualize_recursive(self.state_evaluator.get_right_child(node)) + ' )'
 
 
-        print(visualize_recursive(self.state_evaluator.root))
+        print(visualize_recursive(self.state_evaluator.get_root()))
+
+
+        def __copy__(self):
+            """Performs a deep copy of this object, except for the state evaluator."""
+            other = type(self)()
+            super(base_controller_class.BaseController, other).__init__()
+            other.config = self.config
+            other.max_fp_constant = float(self.config.settings['max fp constant'])
+            other.state_evaluator = [TreeNode(node.index, node.value) if node else None for node in self.state_evaluator]
+
+            return other
