@@ -20,7 +20,7 @@ class GPDriver:
 
         self.population_size = int(self.config.settings['mu'])
         self.child_population_size = int(self.config.settings['lambda'])
-        self.num_parents = int(self.config.settings['num parents'])
+        self.parent_population_size = int(self.config.settings['num parents'])
 
         self.run_count = 1
         self.eval_count = 1
@@ -56,6 +56,8 @@ class GPDriver:
 
             self.population.append(gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont))
 
+            pacman_cont.visualize()
+
 
     def end_run(self):
         """Increments the run count by one.
@@ -63,13 +65,6 @@ class GPDriver:
         This should be called after each run.
         """
         self.run_count += 1
-
-
-    def begin_eval(self, individual):
-        """TODO: is this necessary?
-        
-        This should be called prior to each evaluation."""
-        pass
 
 
     def end_eval(self, individual):
@@ -81,6 +76,7 @@ class GPDriver:
         individual.fitness = individual.world.score
         self.check_update_log_world_files(individual)
         self.eval_count += 1
+        print(self.eval_count)
 
 
     def evaluate(self, population):
@@ -88,8 +84,6 @@ class GPDriver:
         each world's game until completion. 
         """
         for individual in population:
-            self.begin_eval(individual)
-            
             while self.check_game_over(individual):
                 self.move_units(individual)
 
@@ -97,7 +91,7 @@ class GPDriver:
 
 
     def select_parents(self):
-        """TODO: Chooses which parents from the population will breed.
+        """Chooses which parents from the population will breed.
 
         Depending on the parent selection configuration, one of the three following 
         methods is used to select parents:
@@ -107,14 +101,72 @@ class GPDriver:
         The resulting parents are stored in self.parents.
         """
         self.parents = []
+
+        if self.config.settings.getboolean('use fitness proportional parent selection'):
+            # Select parents for breeding using the fitness proportional "roulette wheel" method (with replacement)
+            self.parents = random.choices(self.population, weights=[individual.fitness for individual in self.population], k=self.parent_population_size)
         
+        else:
+            # Default to over-selection parent selection
+            pass        
+
 
     def recombine(self):
         """TODO: Breeds lambda (offspring pool size) children using sub-tree crossover 
         from the existing parent population. The resulting children are stored in 
         self.children.
         """
+
+        def breed(parent_a, parent_b):
+            """Performs sub-tree crossover on parent_a and parent_b returning the child tree."""
+
+            def copy_subtree_recursive(node_a, node_b, count = 0):
+                """Copies node_b and all of node_b's children into node_a."""
+                if node_b.is_leaf():
+                    node_a.children = []
+                    return
+
+                node_a.add_children([node.value for node in node_b.children])
+                print(node_a)
+
+                copy_subtree_recursive(node_a.left(), node_b.left(), count + 1)
+                copy_subtree_recursive(node_a.right(), node_b.right(), count + 1)
+
+
+            # Generate a list of each parent's state evaluator nodes
+            node_list_a = parent_a.pacman_cont.state_evaluator.get_node_list()
+            node_list_b = parent_b.pacman_cont.state_evaluator.get_node_list()
+
+            # Choose a random node (crossover point) from each state evaluator node list
+            crossover_node_a = node_list_a[random.randrange(0, len(node_list_a))]
+            crossover_node_b = node_list_b[random.randrange(0, len(node_list_b))]
+            insertion_node = tree.Node(crossover_node_a.value)
+
+
+            crossover_node_a.value = crossover_node_b.value
+            copy_subtree_recursive(crossover_node_a, crossover_node_b)
+
+            world = gpac_world_class.GPacWorld(self.config)
+            game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords, self.get_num_adj_walls(world, world.pacman_coords[0]))
+            pacman_cont = parent_a.pacman_cont
+            ghosts_cont = parent_a.ghosts_cont
+            game_state.update_walls(world.wall_coords)
+
+
+            child = gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont)
+            return child
+
+
         self.children = []
+
+        for _ in range(self.child_population_size):
+            # Select parents with replacement
+            # Note: this implementation allows for parent_a and parent_b to be the same genotype
+            parent_a = self.parents[random.randint(0, len(self.parents) - 1)]
+            parent_b = self.parents[random.randint(0, len(self.parents) - 1)]
+
+            # Produce a child
+            self.children.append(breed(parent_a, parent_b))
         
 
     def mutate(self):
@@ -129,7 +181,23 @@ class GPDriver:
 
         Survivors are stored in self.population.
         """
-        pass
+        if self.config.settings.getboolean('comma survival strategy'):
+            # Use the comma survival strategy
+            selection_pool = self.children
+        
+        else:
+            # Default to plus survival strategy
+            selection_pool = self.population + self.children
+
+
+        if self.config.settings.getboolean('use k tournament survival selection'):
+            # Use k-tournament for survival selection without replacement
+            pass
+        
+        else:
+            # Default to truncation survival selection
+            self.sort_individuals(selection_pool)
+            self.population = selection_pool[:self.population_size]
 
 
     def update_game_state(self, individual):
@@ -233,3 +301,7 @@ class GPDriver:
     def get_num_adj_walls(self, world, coord):
         """Returns the number of walls adjacent to coord in the given world."""
         return len([c for c in world.get_adj_coords(coord) if c in world.wall_coords])
+
+
+    def sort_individuals(self, individuals):
+        individuals.sort(key=lambda x : x.fitness, reverse=True)

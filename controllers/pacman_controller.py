@@ -59,7 +59,7 @@ class PacmanController(base_controller_class.BaseController):
                 init_state_evaluator_recursive(child, current_depth + 1)
 
 
-        target_height = random.randint(2, int(self.config.settings['max tree generation height']))
+        target_height = 2 # random.randint(2, int(self.config.settings['max tree generation height']))
         self.state_evaluator = tree_class.Tree(self.config, self.get_rand_function_node())
 
         init_state_evaluator_recursive(self.state_evaluator.root)
