@@ -5,6 +5,7 @@ import controllers.tree as tree
 import copy
 import gp.gpac_world_individual as gpac_world_individual_class
 import gp.log as log_class
+import gp.soln as soln_class
 import math
 import random
 import util.seed as seed_class
@@ -33,6 +34,7 @@ class GPDriver:
         self.stale_score_count_termination = 0
 
         self.log = log_class.Log(self.config, self.seed, overwrite=True)
+        self.soln = soln_class.Solution(self.config)
 
         self.local_best_score = -1
         self.global_best_score = -1
@@ -387,6 +389,9 @@ class GPDriver:
 
             # Write to world file
             individual.world.world_file.write_to_file()
+
+            # Write to solution file
+            self.soln.write_to_file(individual)
 
             individual.pacman_cont.visualize()
 

@@ -274,8 +274,12 @@ class PacmanController(base_controller_class.BaseController):
         return evaluations
 
 
-    def visualize(self):
-        """Prints a function representing the state evaluator."""
+    def visualize(self, print_output=True):
+        """Prints a function representing the state evaluator.
+        
+        If print_output is True, the output is printed. Otherwise, it 
+        is returned as a string.
+        """
 
         def get_symbol(node):
             """Returns a symbol (string) associated with the given node."""
@@ -316,7 +320,13 @@ class PacmanController(base_controller_class.BaseController):
             return '( ' + visualize_recursive(self.state_evaluator.get_left_child(node)) + ' ' + get_symbol(node) + ' ' + visualize_recursive(self.state_evaluator.get_right_child(node)) + ' )'
 
 
-        print(visualize_recursive(self.state_evaluator.get_root()))
+        output = visualize_recursive(self.state_evaluator.get_root())
+
+        if print_output:
+            print(output)
+        
+        else:
+            return output
 
 
     def __copy__(self):

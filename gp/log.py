@@ -42,4 +42,3 @@ class Log:
         run_data = str(eval_count) + '\t' + str(average_score) + '\t' + str(highest_score)
         self.write(run_data)
         print(run_data)
-
