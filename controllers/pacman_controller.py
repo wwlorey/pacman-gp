@@ -38,25 +38,25 @@ class PacmanController(base_controller_class.BaseController):
             if current_depth == target_height:
                 # End this branch
                 target_height_met = True
-                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
-                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node_left(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node_right(parent_node, self.get_rand_terminal_node())
                 return
             
             if target_height_met and current_depth < target_height and random.random() < float(self.config.settings['premature end prob']):
                 # Prematurely end this branch
-                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
-                self.state_evaluator.add_node(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node_left(parent_node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node_right(parent_node, self.get_rand_terminal_node())
                 return
 
             # Continue constructing the tree
-            self.state_evaluator.add_node(parent_node, self.get_rand_function_node())
-            self.state_evaluator.add_node(parent_node, self.get_rand_function_node())
+            self.state_evaluator.add_node_left(parent_node, self.get_rand_function_node())
+            self.state_evaluator.add_node_right(parent_node, self.get_rand_function_node())
 
             init_state_evaluator_recursive(self.state_evaluator.get_left_child(parent_node), current_depth + 1)
             init_state_evaluator_recursive(self.state_evaluator.get_right_child(parent_node), current_depth + 1)
 
 
-        target_height = random.randint(2, int(self.config.settings['max tree generation height']))
+        target_height = 3#random.randint(2, int(self.config.settings['max tree generation height']))
         self.state_evaluator = tree_class.Tree(self.config, self.get_rand_function_node())
 
         init_state_evaluator_recursive(self.state_evaluator.get_root())
@@ -302,12 +302,41 @@ class PacmanController(base_controller_class.BaseController):
         print(visualize_recursive(self.state_evaluator.get_root()))
 
 
-        def __copy__(self):
-            """Performs a deep copy of this object, except for the state evaluator."""
-            other = type(self)()
-            super(base_controller_class.BaseController, other).__init__()
-            other.config = self.config
-            other.max_fp_constant = float(self.config.settings['max fp constant'])
-            other.state_evaluator = [TreeNode(node.index, node.value) if node else None for node in self.state_evaluator]
+    def __copy__(self):
+        """Performs a deep copy of this object, except for the state evaluator."""
+        other = type(self)(self.config)
+        super(base_controller_class.BaseController, other).__init__()
+        other.config = self.config
+        other.max_fp_constant = float(self.config.settings['max fp constant'])
+        other.state_evaluator = tree_class.Tree(self.config)
+        other.state_evaluator.list[:] = [tree_class.TreeNode(node.index, node.value) if node else None for node in self.state_evaluator]
 
-            return other
+        return other
+
+
+    def grow(self, starting_node):
+        """Randomly (re)grows a branch on state_evaluator starting at (and including) 
+        starting_node up to target_height.
+        """
+
+        def grow_recursive(node, relative_depth=1):
+            if relative_depth == target_height:
+                # self.state_evaluator[node.index].value = self.get_rand_terminal_node()
+
+                # print(self.state_evaluator[node.index])
+
+                self.state_evaluator.add_node_left(node, self.get_rand_terminal_node())
+                self.state_evaluator.add_node_right(node, self.get_rand_terminal_node())
+                return
+
+            self.state_evaluator.add_node_left(node, self.get_rand_function_node())
+            self.state_evaluator.add_node_right(node, self.get_rand_function_node())
+
+            grow_recursive(self.state_evaluator.get_left_child(node), relative_depth + 1)
+            grow_recursive(self.state_evaluator.get_right_child(node), relative_depth + 1)
+
+        
+        target_height = random.randint(int(self.config.settings['min tree mutation height']), int(self.config.settings['max tree mutation height']))
+
+        self.state_evaluator[starting_node.index].value = self.get_rand_function_node()
+        grow_recursive(starting_node)

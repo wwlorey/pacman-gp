@@ -149,7 +149,6 @@ class GPDriver:
             ghosts_cont = parent_a.ghosts_cont
             game_state.update_walls(world.wall_coords)
 
-
             child = gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont)
             return child
 
@@ -168,7 +167,26 @@ class GPDriver:
 
     def mutate(self):
         """TODO: Probabilistically performs mutation on each child in the child population."""
-        pass
+
+        def nullify(state_evaluator, node):
+            """Recursively sets this node and its branch to the None node."""
+            state_evaluator[node.index].value = None
+
+            if not state_evaluator.is_leaf(node):
+                nullify(state_evaluator, state_evaluator.get_left_child(node))
+                nullify(state_evaluator, state_evaluator.get_right_child(node))
+
+
+        for child in self.children:
+            if random.random() < float(self.config.settings['mutation rate']):
+                # Choose mutation node
+                mutation_node = child.pacman_cont.state_evaluator[random.choices([n for n in child.pacman_cont.state_evaluator if n.value])[0].index]
+
+                # Remove traces of previous subtree
+                nullify(child.pacman_cont.state_evaluator, mutation_node)
+
+                # Grow a new subtree
+                child.pacman_cont.grow(mutation_node)
         
 
     def select_for_survival(self):

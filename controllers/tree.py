@@ -109,36 +109,26 @@ class Tree:
         return 1
 
 
-    def add_node(self, parent_node=TreeNode(0, None), value=None):
-        """Adds a new node with provided value to the node denoted by
-        parent_node, first trying to add as a left child node, then as a right child node.
+    def add_node_at_index(self, index, value):
+        """Creates a new TreeNode object in self.list at index.
 
-        If parent_node is not specified, the child node is added to the root node.
+        Allocates more space for the tree list as needed.
         """
+        if index >= len(self.list):
+            # Allocate more space for this list
+            self.list = self.list + [TreeNode(index, None) for index in range(len(self.list), len(self.list) * 2)]
+
+        self.list[index].value = value
+
+
+    def add_node_left(self, parent_node, value=None):
+        """Adds a new node with provided value to the left node of parent_node."""
+        self.add_node_at_index(self.get_left_child_index(parent_node), value)
+
         
-        def add_node_at_index(index, value):
-            """Creates a new TreeNode object in self.list at index.
-
-            Allocates more space for the tree list as needed.
-            """
-            if index >= len(self.list):
-                # Allocate more space for this list
-                self.list = self.list + [TreeNode(index, None) for index in range(len(self.list), len(self.list) * 2)]
-
-            self.list[index] = TreeNode(index, value)
-
-
-        left_child_index = self.get_left_child(parent_node)
-        if not left_child_index.value:
-            add_node_at_index(self.get_left_child_index(parent_node), value)
-            return True
-
-        right_child_index = self.get_right_child(parent_node)
-        if not right_child_index.value:
-            add_node_at_index(self.get_right_child_index(parent_node), value)
-            return True
-        
-        return False
+    def add_node_right(self, parent_node, value=None):
+        """Adds a new node with provided value to the right node of parent_node."""
+        self.add_node_at_index(self.get_right_child_index(parent_node), value) 
 
 
     def get_root(self):
@@ -148,5 +138,5 @@ class Tree:
 
     def is_leaf(self, node):
         """Returns if this node is a leaf node (i.e. it has no children)."""
-        return not self.get_left_child(node).value and not self.get_right_child(node).value
+        return not self.get_left_child(node).value or not self.get_right_child(node).value
     
