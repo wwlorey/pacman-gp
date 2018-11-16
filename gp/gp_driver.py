@@ -78,9 +78,22 @@ class GPDriver:
         self.eval_count += 1
 
 
+    def control_bloat(self):
+        """Adjusts the fitness of each individual in the population by applying 
+        parsimony pressure.
+        """
+        average_tree_size = sum([individual.pacman_cont.state_evaluator.get_height() for individual in self.population]) / self.population_size
+
+        for individual in self.population:
+            height = individual.pacman_cont.state_evaluator.get_height()
+
+            if  height > average_tree_size:
+                individual.fitness -= int(float(self.config.settings['parsimony coefficient']) * (height - average_tree_size))
+
+
     def evaluate(self, population):
         """Evaluates all population members given in population by running
-        each world's game until completion. 
+        each world's game until completion.
         """
         for individual in population:
             while self.check_game_over(individual):
@@ -192,7 +205,7 @@ class GPDriver:
         
 
     def mutate(self):
-        """TODO: Probabilistically performs mutation on each child in the child population."""
+        """Probabilistically performs mutation on each child in the child population."""
 
         def nullify(state_evaluator, node):
             """Recursively sets this node and its branch to the None node."""
@@ -230,6 +243,7 @@ class GPDriver:
             # Default to plus survival strategy
             selection_pool = self.population + self.children
 
+        prev_pop = self.population
         self.population = []
 
         if self.config.settings.getboolean('use k tournament survival selection'):
@@ -245,7 +259,7 @@ class GPDriver:
             # Default to truncation survival selection
             self.sort_individuals(selection_pool)
             self.population = selection_pool[:self.population_size]
-
+        
 
     def update_game_state(self, individual):
         """Updates the state of the game *before* all characters have moved."""

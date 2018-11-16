@@ -101,7 +101,7 @@ class Tree:
         counter = 0
 
         for n in self.list[::-1]:
-            if n != None:
+            if n.value != None:
                 return math.ceil(math.log2(len(self.list) - counter))
 
             counter += 1

@@ -26,6 +26,9 @@ if __name__ == '__main__':
         gp_driver.evaluate(gp_driver.population)
 
         while gp_driver.decide_termination():
+            if config.settings.getboolean('control bloat'):
+                gp_driver.control_bloat()
+
             gp_driver.select_parents()
 
             gp_driver.recombine()
