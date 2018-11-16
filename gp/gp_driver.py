@@ -82,13 +82,13 @@ class GPDriver:
         """Adjusts the fitness of each individual in the population by applying 
         parsimony pressure.
         """
-        avg_num_nodes = sum([individual.pacman_cont.get_num_nodes() for individual in self.population]) / self.population_size
+        avg_num_nodes = int(sum([individual.pacman_cont.get_num_nodes() for individual in self.population]) / self.population_size)
 
         for individual in self.population:
             num_nodes = individual.pacman_cont.get_num_nodes()
 
             if  num_nodes > avg_num_nodes:
-                individual.fitness -= int(float(self.config.settings['p parsimony coefficient']) * (num_nodes - avg_num_nodes))
+                individual.fitness /= int(float(self.config.settings['p parsimony coefficient']) * (num_nodes - avg_num_nodes))
 
 
     def evaluate(self, population):

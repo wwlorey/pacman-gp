@@ -32,20 +32,21 @@ class PacmanController(base_controller_class.BaseController):
 
 
     def init_state_evaluator(self):
-        """Initializes this controller's state evaluator tree."""
+        """Initializes this controller's state evaluator tree using the ramped half-and-half method."""
         target_height_met = False
 
-        def init_state_evaluator_recursive(parent_node, current_depth=2):
+        def init_state_evaluator_recursive(parent_node, current_depth=1):
             nonlocal target_height_met
+            nonlocal allow_premature_end
 
-            if current_depth == target_height:
+            if current_depth + 1 == target_height:
                 # End this branch
                 target_height_met = True
                 self.state_evaluator.add_node_left(parent_node, self.get_rand_terminal_node())
                 self.state_evaluator.add_node_right(parent_node, self.get_rand_terminal_node())
                 return
             
-            if target_height_met and current_depth < target_height and random.random() < float(self.config.settings['premature end prob']):
+            if allow_premature_end and target_height_met and current_depth < target_height and random.random() < float(self.config.settings['premature end probability']):
                 # Prematurely end this branch
                 self.state_evaluator.add_node_left(parent_node, self.get_rand_terminal_node())
                 self.state_evaluator.add_node_right(parent_node, self.get_rand_terminal_node())
@@ -59,8 +60,16 @@ class PacmanController(base_controller_class.BaseController):
             init_state_evaluator_recursive(self.state_evaluator.get_right_child(parent_node), current_depth + 1)
 
 
-        target_height = 3#random.randint(2, int(self.config.settings['max tree generation height']))
+        target_height = random.randint(2, int(self.config.settings['max tree generation height']))
         self.state_evaluator = tree_class.Tree(self.config, self.get_rand_function_node())
+
+        if random.random() < float(self.config.settings['ramped half-and-half probability']):
+            # Use full initialization method
+            allow_premature_end = False
+        
+        else:
+            # Use grow initialization method
+            allow_premature_end = True
 
         init_state_evaluator_recursive(self.state_evaluator.get_root())
 

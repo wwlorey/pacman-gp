@@ -23,7 +23,7 @@ class GPacWorld:
         self.wall_density = float(self.config.settings['wall density']) / 100
         self.num_pacmen = int(self.config.settings['num pacmen'])
         self.num_ghosts = int(self.config.settings['num ghosts'])
-        self.fruit_spawn_prob = float(self.config.settings['fruit spawn prob'])
+        self.fruit_spawn_prob = float(self.config.settings['fruit spawn probability'])
         self.fruit_score = int(self.config.settings['fruit score'])
         self.time_multiplier = int(self.config.settings['time multiplier'])
 
