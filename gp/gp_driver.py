@@ -25,11 +25,12 @@ class GPDriver:
         self.parent_population_size = int(self.config.settings['num parents'])
 
         self.run_count = 1
-        self.eval_count = 1
+        self.eval_count = 0
         self.local_best_score = -1
 
         self.log = log_class.Log(self.config, self.seed, overwrite=True)
 
+        self.local_best_score = -1
         self.global_best_score = -1
 
         self.population = []
@@ -43,7 +44,7 @@ class GPDriver:
 
         This should be called before each run.
         """
-        self.eval_count = 1
+        self.eval_count = 0
         self.local_best_score = -1
         self.log.write_run_header(self.run_count)
 
@@ -74,7 +75,6 @@ class GPDriver:
         This should be called after each evaluation.
         """
         individual.fitness = individual.world.score
-        self.check_update_log_world_files(individual)
         self.eval_count += 1
 
 
@@ -101,6 +101,8 @@ class GPDriver:
 
             self.end_eval(individual)
 
+        self.check_update_log_world_files()
+
 
     def select_parents(self):
         """Chooses which parents from the population will breed.
@@ -116,8 +118,15 @@ class GPDriver:
 
         if self.config.settings.getboolean('use fitness proportional parent selection'):
             # Select parents for breeding using the fitness proportional "roulette wheel" method (with replacement)
-            self.parents = random.choices(self.population, weights=[individual.fitness for individual in self.population], k=self.parent_population_size)
-        
+            parent_fitnesses = [individual.fitness for individual in self.population]
+
+            if max(parent_fitnesses) == min(parent_fitnesses):
+                for _ in range(self.parent_population_size):
+                    self.parents.append(self.population[random.randrange(0, len(self.population))])
+
+            else:
+                self.parents = random.choices(self.population, weights=parent_fitnesses, k=self.parent_population_size)
+
         else:
             # Default to over-selection parent selection
             elite_index_cuttoff = int(float(self.config.settings['x overselection']) * len(self.population))
@@ -337,23 +346,29 @@ class GPDriver:
         return True
 
 
-    def check_update_log_world_files(self, individual):
-        """Writes a new log file entry iff a new local best score is found and writes
-        transcript of this run to the world file iff it had the 
-        global best score.
-        
-        TODO: update this
+    def check_update_log_world_files(self):
+        """Writes a new log file entry and writes a transcript of this run to the 
+        world file iff it had the global best score.
         """
-        # Determine if a new local best score (fitness) has been found
-        if individual.world.score > self.local_best_score:
-            self.local_best_score = individual.world.score
+        fitness_list = [individual.fitness for individual in self.population]
+        average_score = sum(fitness_list) / self.population_size
+        local_best_fitness_candidate = max(fitness_list)
 
-            # Write log file row
-            self.log.write_run_data(self.eval_count, self.local_best_score)
+        # Determine if a new local best score (fitness) has been found
+        if local_best_fitness_candidate > self.local_best_score:
+            self.local_best_score = local_best_fitness_candidate
+
+            for individual in self.population:
+                if individual.fitness == self.local_best_score:
+                    local_best_individual = individual
+                    break
+
+        # Write log file row
+        self.log.write_run_data(self.eval_count, average_score, self.local_best_score)
         
         # Determine if a new global best score has been found
-        if individual.world.score > self.global_best_score:
-            self.global_best_score = individual.world.score
+        if self.local_best_score > self.global_best_score:
+            self.global_best_score = self.local_best_score
 
             # Write to world file
             individual.world.world_file.write_to_file()

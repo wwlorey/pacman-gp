@@ -37,9 +37,9 @@ class Log:
         print(run_header)
 
 
-    def write_run_data(self, eval_count, highest_score):
+    def write_run_data(self, eval_count, average_score, highest_score):
         """Writes the given run data to file and to the screen."""
-        run_data = str(eval_count) + '\t' + str(highest_score)
+        run_data = str(eval_count) + '\t' + str(average_score) + '\t' + str(highest_score)
         self.write(run_data)
         print(run_data)
 
