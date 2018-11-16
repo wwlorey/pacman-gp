@@ -76,7 +76,6 @@ class GPDriver:
         individual.fitness = individual.world.score
         self.check_update_log_world_files(individual)
         self.eval_count += 1
-        print(self.eval_count)
 
 
     def evaluate(self, population):
@@ -112,7 +111,7 @@ class GPDriver:
 
 
     def recombine(self):
-        """TODO: Breeds lambda (offspring pool size) children using sub-tree crossover 
+        """Breeds lambda (offspring pool size) children using sub-tree crossover 
         from the existing parent population. The resulting children are stored in 
         self.children.
         """
@@ -173,7 +172,7 @@ class GPDriver:
         
 
     def select_for_survival(self):
-        """TODO: Survivors are selected based on the following configurable methods:
+        """Survivors are selected based on the following configurable methods:
             1. k-tournament selection without replacement
             2. Truncation
 
@@ -187,9 +186,16 @@ class GPDriver:
             # Default to plus survival strategy
             selection_pool = self.population + self.children
 
+        self.population = []
+
         if self.config.settings.getboolean('use k tournament survival selection'):
             # Use k-tournament for survival selection without replacement
-            pass
+            while len(self.population) <= self.population_size:
+                self.population.append(self.perform_tournament_selection(selection_pool, int(self.config.settings['k survival selection']), w_replacement=False))
+
+            # Maintain the population size
+            # This accounts for situations where the population size is not divisible by k
+            self.population = self.population[:self.population_size]
         
         else:
             # Default to truncation survival selection
@@ -302,3 +308,29 @@ class GPDriver:
 
     def sort_individuals(self, individuals):
         individuals.sort(key=lambda x : x.fitness, reverse=True)
+
+
+    def perform_tournament_selection(self, individuals, k, w_replacement=False):
+        """Performs a k-tournament selection on individuals, a list of GPacWorldIndividual 
+        objects. 
+        
+        Returns the winning individual (the individual with the best fitness).
+        """
+        arena_individuals = []
+        forbidden_indices = set([])
+
+        # Randomly select k elements from individuals
+        for _ in range(k):
+            rand_index = random.randint(0, len(individuals) - 1)
+
+            # Don't allow replacement (if applicable)
+            while rand_index in forbidden_indices:
+                rand_index = random.randint(0, len(individuals) - 1)
+
+            arena_individuals.append(individuals[rand_index])
+
+            if w_replacement == False:
+                forbidden_indices.add(rand_index)
+
+        # Make the individuals fight, return the winner
+        return max(arena_individuals, key=lambda x : x.fitness)
