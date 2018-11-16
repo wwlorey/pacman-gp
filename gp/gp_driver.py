@@ -82,13 +82,13 @@ class GPDriver:
         """Adjusts the fitness of each individual in the population by applying 
         parsimony pressure.
         """
-        average_tree_size = sum([individual.pacman_cont.state_evaluator.get_height() for individual in self.population]) / self.population_size
+        avg_num_nodes = sum([individual.pacman_cont.get_num_nodes() for individual in self.population]) / self.population_size
 
         for individual in self.population:
-            height = individual.pacman_cont.state_evaluator.get_height()
+            num_nodes = individual.pacman_cont.get_num_nodes()
 
-            if  height > average_tree_size:
-                individual.fitness -= int(float(self.config.settings['parsimony coefficient']) * (height - average_tree_size))
+            if  num_nodes > avg_num_nodes:
+                individual.fitness -= int(float(self.config.settings['p parsimony coefficient']) * (num_nodes - avg_num_nodes))
 
 
     def evaluate(self, population):
@@ -121,6 +121,7 @@ class GPDriver:
             parent_fitnesses = [individual.fitness for individual in self.population]
 
             if max(parent_fitnesses) == min(parent_fitnesses):
+                # All parent fitnesses are the same so select parents at random
                 for _ in range(self.parent_population_size):
                     self.parents.append(self.population[random.randrange(0, len(self.population))])
 
@@ -142,6 +143,7 @@ class GPDriver:
             elite_choices = [individual.fitness for individual in elite_group]
 
             if max(elite_choices) == min(elite_choices):
+                # All elite individual fitnesses are the same so select individuals at random
                 for _ in range(num_elite_parents):
                     self.parents.append(elite_group.pop())
             
@@ -151,6 +153,7 @@ class GPDriver:
             sub_elite_choices = [individual.fitness for individual in sub_elite_group]
 
             if max(sub_elite_choices) == min(sub_elite_choices):
+                # All sub-elite individual fitnesses are the same so select individuals at random
                 for _ in range(num_sub_elite_parents):
                     self.parents.append(sub_elite_group.pop())
             
@@ -214,7 +217,7 @@ class GPDriver:
         
 
     def mutate(self):
-        """Probabilistically performs mutation on each child in the child population."""
+        """Probabilistically performs sub-tree mutation on each child in the child population."""
 
         def nullify(state_evaluator, node):
             """Recursively sets this node and its branch to the None node."""
@@ -252,7 +255,6 @@ class GPDriver:
             # Default to plus survival strategy
             selection_pool = self.population + self.children
 
-        prev_pop = self.population
         self.population = []
 
         if self.config.settings.getboolean('use k tournament survival selection'):
@@ -326,6 +328,7 @@ class GPDriver:
 
         The program will terminate if any of the following conditions are True:
             1. The number of evaluations specified in config has been reached.
+            2. There has been no change in fitness for n generations.
         """
         if self.eval_count >= int(self.config.settings['num fitness evals']):
             # The number of desired evaluations has been reached
@@ -372,6 +375,8 @@ class GPDriver:
 
             # Write to world file
             individual.world.world_file.write_to_file()
+
+            individual.pacman_cont.visualize()
 
 
     def get_num_adj_walls(self, world, coord):

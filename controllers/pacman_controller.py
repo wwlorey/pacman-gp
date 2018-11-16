@@ -12,8 +12,11 @@ terminals = nodes_classes.TerminalNodes
 functions = nodes_classes.FunctionNodes
 
 
+# Constant declarations
 POSSIBLE_MOVES = [d.Direction.NONE, d.Direction.UP, d.Direction.DOWN, 
     d.Direction.LEFT, d.Direction.RIGHT]
+
+ARBITRARY_LARGE_NUMBER = 99999
 
 
 class PacmanController(base_controller_class.BaseController):
@@ -116,7 +119,7 @@ class PacmanController(base_controller_class.BaseController):
         best_eval_directions = []
 
         for pacman_coord in game_state.pacman_coords:
-            best_eval_result = 0
+            best_eval_result = -1 * ARBITRARY_LARGE_NUMBER
             best_eval_direction = d.Direction.NONE
 
             for direction in POSSIBLE_MOVES:
@@ -167,7 +170,7 @@ class PacmanController(base_controller_class.BaseController):
             else:
                 coords_to_search = []
                 
-            min_distance = -1
+            min_distance = ARBITRARY_LARGE_NUMBER
             for coord in coords_to_search:
                 min_distance = min(min_distance, get_distance(pacman_coord, coord))
             
@@ -188,6 +191,11 @@ class PacmanController(base_controller_class.BaseController):
 
             def get_fp(node):
                 """Returns the FP value associated with the given *terminal* node."""
+                nonlocal ghost_distance
+                nonlocal pill_distance
+                nonlocal fruit_distance
+                nonlocal num_adj_walls
+
                 ret = 0
 
                 if node.value == terminals.PACMAN_GHOST_DIST:
@@ -217,14 +225,14 @@ class PacmanController(base_controller_class.BaseController):
                     return operands[0] * operands[1]
                 
                 if operator == functions.DIVIDE:
-                    if 0 in operands:
-                        return 0
+                    if 0.0 in operands:
+                        return 0.0
                     
                     else:
                         return operands[0] / operands[1]
                 
                 if operator == functions.ADD:
-                    return sum(operands)
+                    return operands[0] + operands[1]
                 
                 if operator == functions.SUBTRACT:
                     return operands[0] - operands[1]
@@ -336,3 +344,8 @@ class PacmanController(base_controller_class.BaseController):
 
         self.state_evaluator[starting_node.index].value = self.get_rand_function_node()
         grow_recursive(starting_node)
+
+
+    def get_num_nodes(self):
+        """Returns the number of non-None nodes in self.state_evaluator."""
+        return len([node for node in self.state_evaluator if node.value])
