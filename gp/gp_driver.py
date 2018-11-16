@@ -107,8 +107,34 @@ class GPDriver:
         
         else:
             # Default to over-selection parent selection
-            pass        
+            elite_index_cuttoff = int(float(self.config.settings['x overselection']) * len(self.population))
 
+            # Note: the following hardcoded percentages are specified as part of the overselection algorithm
+            num_elite_parents = int(0.80 * self.parent_population_size)
+            num_sub_elite_parents = int(0.20 * self.parent_population_size)
+
+            self.sort_individuals(self.population)
+            elite_group = self.population[:elite_index_cuttoff]
+            sub_elite_group = self.population[elite_index_cuttoff:]
+
+            elite_choices = [individual.fitness for individual in elite_group]
+
+            if max(elite_choices) == min(elite_choices):
+                for _ in range(num_elite_parents):
+                    self.parents.append(elite_group.pop())
+            
+            else:
+                self.parents = random.choices(elite_group, weights=elite_choices, k=num_elite_parents)
+
+            sub_elite_choices = [individual.fitness for individual in sub_elite_group]
+
+            if max(sub_elite_choices) == min(sub_elite_choices):
+                for _ in range(num_sub_elite_parents):
+                    self.parents.append(sub_elite_group.pop())
+            
+            else:
+                self.parents += random.choices(sub_elite_group, weights=sub_elite_choices, k=num_sub_elite_parents)
+                 
 
     def recombine(self):
         """Breeds lambda (offspring pool size) children using sub-tree crossover 
@@ -310,7 +336,7 @@ class GPDriver:
 
             # Write log file row
             self.log.write_run_data(self.eval_count, self.local_best_score)
-
+        
         # Determine if a new global best score has been found
         if individual.world.score > self.global_best_score:
             self.global_best_score = individual.world.score

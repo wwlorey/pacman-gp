@@ -321,10 +321,6 @@ class PacmanController(base_controller_class.BaseController):
 
         def grow_recursive(node, relative_depth=1):
             if relative_depth == target_height:
-                # self.state_evaluator[node.index].value = self.get_rand_terminal_node()
-
-                # print(self.state_evaluator[node.index])
-
                 self.state_evaluator.add_node_left(node, self.get_rand_terminal_node())
                 self.state_evaluator.add_node_right(node, self.get_rand_terminal_node())
                 return
