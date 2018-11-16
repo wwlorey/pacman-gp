@@ -5,6 +5,7 @@ import controllers.tree as tree
 import copy
 import gp.gpac_world_individual as gpac_world_individual_class
 import gp.log as log_class
+import math
 import random
 import util.seed as seed_class
 import world.gpac_world as gpac_world_class
@@ -27,6 +28,9 @@ class GPDriver:
         self.run_count = 1
         self.eval_count = 0
         self.local_best_score = -1
+        self.avg_score = 0
+        self.prev_avg_score = 0
+        self.stale_score_count_termination = 0
 
         self.log = log_class.Log(self.config, self.seed, overwrite=True)
 
@@ -46,6 +50,9 @@ class GPDriver:
         """
         self.eval_count = 0
         self.local_best_score = -1
+        self.avg_score = 0
+        self.prev_avg_score = 0
+        self.stale_score_count_termination = 0
         self.log.write_run_header(self.run_count)
 
         # Initialize the population
@@ -333,6 +340,10 @@ class GPDriver:
         if self.eval_count >= int(self.config.settings['num fitness evals']):
             # The number of desired evaluations has been reached
             return False
+        
+        if self.stale_score_count_termination >= int(self.config.settings['n convergence criterion']):
+            # The population has stagnated
+            return False
 
         return True
 
@@ -354,7 +365,7 @@ class GPDriver:
         world file iff it had the global best score.
         """
         fitness_list = [individual.fitness for individual in self.population]
-        average_score = sum(fitness_list) / self.population_size
+        self.avg_score = sum(fitness_list) / self.population_size
         local_best_fitness_candidate = max(fitness_list)
 
         # Determine if a new local best score (fitness) has been found
@@ -367,7 +378,7 @@ class GPDriver:
                     break
 
         # Write log file row
-        self.log.write_run_data(self.eval_count, average_score, self.local_best_score)
+        self.log.write_run_data(self.eval_count, self.avg_score, self.local_best_score)
         
         # Determine if a new global best score has been found
         if self.local_best_score > self.global_best_score:
@@ -378,6 +389,14 @@ class GPDriver:
 
             individual.pacman_cont.visualize()
 
+        # Determine if the population fitness is stagnating
+        if math.isclose(self.avg_score, self.prev_avg_score, rel_tol=float(self.config.settings['termination convergence criterion magnitude'])):
+            self.stale_score_count_termination += 1
+
+        else:
+            self.stale_fitness_count_termination = 0
+            self.prev_avg_score = self.avg_score
+
 
     def get_num_adj_walls(self, world, coord):
         """Returns the number of walls adjacent to coord in the given world."""
@@ -385,6 +404,7 @@ class GPDriver:
 
 
     def sort_individuals(self, individuals):
+        """Sorts the given individuals in-place by fitness, from best to worst."""
         individuals.sort(key=lambda x : x.fitness, reverse=True)
 
 
