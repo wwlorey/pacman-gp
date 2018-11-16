@@ -96,6 +96,7 @@ class GPDriver:
 
             if  num_nodes > avg_num_nodes:
                 individual.fitness /= int(float(self.config.settings['p parsimony coefficient']) * (num_nodes - avg_num_nodes))
+                individual.fitness = int(individual.fitness)
 
 
     def evaluate(self, population):
