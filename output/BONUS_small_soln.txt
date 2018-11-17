@@ -1,0 +1,9 @@
+###################################
+# State Evaluator Tree (list format)
+###################################
+[<FunctionNodes.SUBTRACT: 1>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.MULTIPLY: 2>, <FunctionNodes.ADD: 0>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.RANDOM_FLOAT: 4>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.RANDOM_FLOAT: 4>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.SUBTRACT: 1>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.MULTIPLY: 2>, <FunctionNodes.MULTIPLY: 2>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, 403.93959184032246, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.NEAREST_PACMAN_DIST: 5>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, <TerminalNodes.PACMAN_PILL_DIST: 1>, <TerminalNodes.PACMAN_PILL_DIST: 1>, <TerminalNodes.PACMAN_PILL_DIST: 1>, 811.9835304751693, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_PILL_DIST: 1>, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+
+###################################
+# State Evaluator Equation
+###################################
+( ( ( ( fruit distance rand 403.93959184032246 ) + ( ghost distance / ghost distance ) ) / ( ( TerminalNodes.NEAREST_PACMAN_DIST - fruit distance ) / ( pill distance / pill distance ) ) ) - ( ( ( pill distance * 811.9835304751693 ) rand ( ghost distance * pill distance ) ) * ( fruit distance / ghost distance ) ) )

@@ -7,10 +7,10 @@ import numpy as np
 log_file_paths = \
     [
         '../output/small_log.txt',
-        '../output/large_log.txt'
+        '../output/large_log.txt',
+        '../output/BONUS_small_log.txt'
     ]
 '''
-'../output/BONUS_small_log.txt',
 '../output/BONUS_small_competing_log.txt'
 '''
 
