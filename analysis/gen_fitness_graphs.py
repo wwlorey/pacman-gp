@@ -6,16 +6,13 @@ import numpy as np
 
 log_file_paths = \
     [
-        '../output/small_log.txt'
+        '../output/small_log.txt',
+        '../output/large_log.txt'
     ]
 '''
-'../output/large_log.txt',
 '../output/BONUS_small_log.txt',
 '../output/BONUS_small_competing_log.txt'
 '''
-
-ARBITRARY_LARGE_NUMBER = 99999
-NUM_EVALS = 2000
 
 for log_file_index in range(len(log_file_paths)):
     with open(log_file_paths[log_file_index], 'r') as log_file:

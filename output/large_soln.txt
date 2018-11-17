@@ -1,0 +1,9 @@
+###################################
+# State Evaluator Tree (list format)
+###################################
+[<FunctionNodes.ADD: 0>, <FunctionNodes.SUBTRACT: 1>, <FunctionNodes.ADD: 0>, <FunctionNodes.ADD: 0>, <FunctionNodes.ADD: 0>, <FunctionNodes.RANDOM_FLOAT: 4>, <FunctionNodes.SUBTRACT: 1>, <TerminalNodes.NUM_ADJ_WALLS: 3>, 83.16493217176036, 11.346860058388696, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.NUM_ADJ_WALLS: 3>, <TerminalNodes.NUM_ADJ_WALLS: 3>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+
+###################################
+# State Evaluator Equation
+###################################
+( ( ( num adj walls + 83.16493217176036 ) - ( 11.346860058388696 + fruit distance ) ) + ( ( ghost distance rand num adj walls ) + ( num adj walls - fruit distance ) ) )
