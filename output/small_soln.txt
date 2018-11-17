@@ -1,0 +1,9 @@
+###################################
+# State Evaluator Tree (list format)
+###################################
+[<FunctionNodes.RANDOM_FLOAT: 4>, <FunctionNodes.MULTIPLY: 2>, <FunctionNodes.SUBTRACT: 1>, <FunctionNodes.DIVIDE: 3>, <FunctionNodes.SUBTRACT: 1>, <FunctionNodes.RANDOM_FLOAT: 4>, <FunctionNodes.MULTIPLY: 2>, 170.27457425980242, <TerminalNodes.NUM_ADJ_WALLS: 3>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_GHOST_DIST: 0>, <TerminalNodes.PACMAN_PILL_DIST: 1>, <TerminalNodes.PACMAN_FRUIT_DIST: 2>, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+
+###################################
+# State Evaluator Equation
+###################################
+( ( ( 170.27457425980242 / num adj walls ) * ( ghost distance - fruit distance ) ) rand ( ( ghost distance rand ghost distance ) - ( pill distance * fruit distance ) ) )
