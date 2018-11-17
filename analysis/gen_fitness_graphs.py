@@ -39,28 +39,17 @@ for log_file_index in range(len(log_file_paths)):
                 best_fit = float(best_fit)
 
                 if eval_num in eval_dict:
-                    eval_dict[eval_num][0] += avg_fit
-                    eval_dict[eval_num][1] += best_fit
-                    eval_dict[eval_num][2] += 1
-                    eval_dict[eval_num][3] = min(eval_dict[eval_num][3], avg_fit)
+                    eval_dict[eval_num].append(best_fit)
+
                 else:
-                    eval_dict[eval_num] = [avg_fit, best_fit, 1, ARBITRARY_LARGE_NUMBER]
+                    eval_dict[eval_num] = [best_fit]
 
         evals = []
-        avg_fits = []
-        best_fits = []
-        worst_fits = []
+        data = []
         for eval_num in sorted(eval_dict.keys()):
             evals.append(eval_num)
-            avg_fits.append(eval_dict[eval_num][0] / eval_dict[eval_num][2])
-            best_fits.append(eval_dict[eval_num][1] / eval_dict[eval_num][2])
-            worst_fits.append(eval_dict[eval_num][3] / eval_dict[eval_num][2])
-
-
-        data = []
-        for i in range(len(avg_fits)):
-            data.append([worst_fits[i], avg_fits[i], best_fits[i]])
-
+            data.append(eval_dict[eval_num])
+        
         # Plot the results
         fig, ax = plt.subplots()
 
