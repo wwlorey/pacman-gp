@@ -62,11 +62,11 @@ class GPDriver:
         for _ in range(self.population_size):
             world = gpac_world_class.GPacWorld(self.config)
             game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords, self.get_num_adj_walls(world, world.pacman_coords[0]))
-            pacman_cont = pacman_cont_class.PacmanController(self.config)
+            pacman_conts = [pacman_cont_class.PacmanController(self.config) for _ in range(int(self.config.settings['num pacmen']))]
             ghosts_cont = ghosts_cont_class.GhostsController(self.config)
             game_state.update_walls(world.wall_coords)
 
-            self.population.append(gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont))
+            self.population.append(gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_conts, ghosts_cont))
 
 
     def end_run(self):
@@ -91,10 +91,16 @@ class GPDriver:
         """Adjusts the fitness of each individual in the population by applying 
         parsimony pressure.
         """
-        avg_num_nodes = int(sum([individual.pacman_cont.get_num_nodes() for individual in self.population]) / self.population_size)
-
         for individual in self.population:
-            num_nodes = individual.pacman_cont.get_num_nodes()
+            avg_num_nodes = 0
+
+            for pacman_cont in individual.pacman_conts: 
+                avg_num_nodes += int(sum([pacman_cont.get_num_nodes() for individual in self.population]) / self.population_size)
+
+            num_nodes = 0
+
+            for pacman_cont in individual.pacman_conts:
+                num_nodes += pacman_cont.get_num_nodes()
 
             if  num_nodes > avg_num_nodes:
                 individual.fitness /= int(float(self.config.settings['p parsimony coefficient']) * (num_nodes - avg_num_nodes))
@@ -181,36 +187,38 @@ class GPDriver:
             """Performs sub-tree crossover on parent_a and parent_b returning the child tree."""
 
             def crossover_recursive(receiver_index, donator_index):
-                if receiver_index < len(child_pacman_cont.state_evaluator) and donator_index < len(parent_pacman_cont.state_evaluator):
+                if receiver_index < len(child_pacman_conts[cont_index].state_evaluator) and donator_index < len(parent_pacman_cont.state_evaluator):
                     return
                 
-                child_pacman_cont.state_evaluator[receiver_index] = tree.TreeNode(receiver_index, parent_pacman_cont.state_evaluator[donator_index].value)
-                crossover_recursive(child_pacman_cont.state_evaluator.get_left_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_left_child_index(donator_index))
-                crossover_recursive(child_pacman_cont.state_evaluator.get_right_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_right_child_index(donator_index))
+                child_pacman_conts[cont_index].state_evaluator[receiver_index] = tree.TreeNode(receiver_index, parent_pacman_cont.state_evaluator[donator_index].value)
+                crossover_recursive(child_pacman_conts[cont_index].state_evaluator.get_left_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_left_child_index(donator_index))
+                crossover_recursive(child_pacman_conts[cont_index].state_evaluator.get_right_child_index(receiver_index), parent_pacman_cont.state_evaluator.get_right_child_index(donator_index))
 
 
-            # Choose a random node (crossover point) from each state evaluator node list
-            crossover_node_a = parent_a.pacman_cont.state_evaluator[random.choices([n for n in parent_a.pacman_cont.state_evaluator if n.value])[0].index]
-            crossover_node_b = parent_b.pacman_cont.state_evaluator[random.choices([n for n in parent_b.pacman_cont.state_evaluator if n.value])[0].index]
+            child_pacman_conts = [None] * int(self.config.settings['num pacmen'])
+            for cont_index in range(int(self.config.settings['num pacmen'])):
+                # Choose a random node (crossover point) from each state evaluator node list
+                crossover_node_a = parent_a.pacman_conts[cont_index].state_evaluator[random.choices([n for n in parent_a.pacman_conts[cont_index].state_evaluator if n.value])[0].index]
+                crossover_node_b = parent_b.pacman_conts[cont_index].state_evaluator[random.choices([n for n in parent_b.pacman_conts[cont_index].state_evaluator if n.value])[0].index]
 
-            child_pacman_cont = copy.copy(parent_a.pacman_cont)
-            parent_pacman_cont = parent_b.pacman_cont
+                child_pacman_conts[cont_index] = copy.copy(parent_a.pacman_conts[cont_index])
+                parent_pacman_cont = parent_b.pacman_conts[cont_index]
 
-            # Extend the child's state evaluator if necessary
-            if len(child_pacman_cont.state_evaluator) < len(parent_a.pacman_cont.state_evaluator):
-                child_pacman_cont.state_evaluator = child_pacman_cont.state_evaluator + [tree.TreeNode(index, None) for index in range(len(child_pacman_cont.state_evaluator), len(parent_a.pacman_cont.state_evaluator))]
+                # Extend the child's state evaluator if necessary
+                if len(child_pacman_conts[cont_index].state_evaluator) < len(parent_a.pacman_conts[cont_index].state_evaluator):
+                    child_pacman_conts[cont_index].state_evaluator = child_pacman_cont.state_evaluator + [tree.TreeNode(index, None) for index in range(len(child_pacman_cont.state_evaluator), len(parent_a.pacman_cont.state_evaluator))]
 
-            # Perform sub-tree crossover
-            crossover_recursive(crossover_node_a.index, crossover_node_b.index)
+                # Perform sub-tree crossover
+                crossover_recursive(crossover_node_a.index, crossover_node_b.index)
 
             # Finish generating the child
             world = gpac_world_class.GPacWorld(self.config)
             game_state = game_state_class.GameState(world.pacman_coords, world.ghost_coords, world.pill_coords, self.get_num_adj_walls(world, world.pacman_coords[0]))
-            pacman_cont = child_pacman_cont
+            pacman_conts = child_pacman_conts
             ghosts_cont = parent_a.ghosts_cont
             game_state.update_walls(world.wall_coords)
 
-            child = gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_cont, ghosts_cont)
+            child = gpac_world_individual_class.GPacWorldIndividual(world, game_state, pacman_conts, ghosts_cont)
             return child
 
 
@@ -239,15 +247,16 @@ class GPDriver:
 
 
         for child in self.children:
-            if random.random() < float(self.config.settings['mutation rate']):
-                # Choose mutation node
-                mutation_node = child.pacman_cont.state_evaluator[random.choices([n for n in child.pacman_cont.state_evaluator if n.value])[0].index]
+            for pacman_cont in child.pacman_conts:
+                if random.random() < float(self.config.settings['mutation rate']):
+                    # Choose mutation node
+                    mutation_node = pacman_cont.state_evaluator[random.choices([n for n in pacman_cont.state_evaluator if n.value])[0].index]
 
-                # Remove traces of previous subtree
-                nullify(child.pacman_cont.state_evaluator, mutation_node)
+                    # Remove traces of previous subtree
+                    nullify(pacman_cont.state_evaluator, mutation_node)
 
-                # Grow a new subtree
-                child.pacman_cont.grow(mutation_node)
+                    # Grow a new subtree
+                    pacman_cont.grow(mutation_node)
         
 
     def select_for_survival(self):
@@ -305,7 +314,8 @@ class GPDriver:
 
         self.update_game_state(individual)
 
-        individual.world.move_pacmen(individual.pacman_cont.get_move(individual.game_state))
+        for pacman_index, pacman_cont in enumerate(individual.pacman_conts):
+            individual.world.move_pacmen(pacman_cont.get_move(individual.game_state, pacman_index), pacman_index)
 
         for ghost_id in range(len(individual.world.ghost_coords)):
             individual.world.move_ghost(ghost_id, individual.ghosts_cont.get_move(ghost_id, individual.game_state))
@@ -392,8 +402,6 @@ class GPDriver:
 
             # Write to solution file
             self.soln.write_to_file(individual)
-
-            individual.pacman_cont.visualize()
 
         # Determine if the population fitness is stagnating
         if math.isclose(self.avg_score, self.prev_avg_score, rel_tol=float(self.config.settings['termination convergence criterion magnitude'])):

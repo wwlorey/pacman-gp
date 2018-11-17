@@ -43,6 +43,8 @@ class GPacWorld:
         for pacman_coord in self.pacman_coords:
             self.prev_pacman_coords.append(coord_class.Coordinate(pacman_coord.x, pacman_coord.y))
 
+        self.dead_pacmen = set([])
+
         self.prev_ghost_coords = []
         for ghost_coord in self.ghost_coords:
             self.prev_ghost_coords.append(coord_class.Coordinate(ghost_coord.x, ghost_coord.y))
@@ -157,32 +159,37 @@ class GPacWorld:
                 break
 
 
-    def move_pacmen(self, directions):
-        """Moves all pacman in self.pacman_coords in directions[i] (indexed the same 
-        as self.pacman_coords), where each direction is leads pacman to a valid location.
+    def move_pacmen(self, direction, pacman_index):
+        """Moves the pacman in self.pacman_coords at pacman_index in direction, where the direction 
+        leads pacman to a valid location.
+
+        If a pacman is marked as dead, it will not be moved.
         """
-        for index, direction in enumerate(directions):
-            if direction == d.Direction.NONE:
-                # No action needed
-                return
+        if self.pacman_coords[pacman_index] in self.dead_pacmen:
+            # This pacman is dead, don't move it
+            return
 
-            new_coord = coord_class.Coordinate(self.pacman_coords[index].x, self.pacman_coords[index].y)
-            
-            # Adjust new_coord depending on pacman's desired direction
-            if direction == d.Direction.UP:
-                new_coord.y += 1
+        if direction == d.Direction.NONE:
+            # No action needed
+            return
 
-            elif direction == d.Direction.DOWN:
-                new_coord.y -= 1
+        new_coord = coord_class.Coordinate(self.pacman_coords[pacman_index].x, self.pacman_coords[pacman_index].y)
+        
+        # Adjust new_coord depending on pacman's desired direction
+        if direction == d.Direction.UP:
+            new_coord.y += 1
 
-            elif direction == d.Direction.LEFT:
-                new_coord.x -= 1
+        elif direction == d.Direction.DOWN:
+            new_coord.y -= 1
 
-            elif direction == d.Direction.RIGHT:
-                new_coord.x += 1
-            
-            self.prev_pacman_coords[index] = coord_class.Coordinate(self.pacman_coords[index].x, self.pacman_coords[index].y)
-            self.pacman_coords[index] = coord_class.Coordinate(new_coord.x, new_coord.y)
+        elif direction == d.Direction.LEFT:
+            new_coord.x -= 1
+
+        elif direction == d.Direction.RIGHT:
+            new_coord.x += 1
+        
+        self.prev_pacman_coords[pacman_index] = coord_class.Coordinate(self.pacman_coords[pacman_index].x, self.pacman_coords[pacman_index].y)
+        self.pacman_coords[pacman_index] = coord_class.Coordinate(new_coord.x, new_coord.y)
 
 
     def move_ghost(self, ghost_id, direction):
@@ -223,14 +230,14 @@ class GPacWorld:
         """
         for pacman_index, pacman_coord in enumerate(self.pacman_coords):
             if pacman_coord in self.ghost_coords:
-                self.pacman_coords.remove(pacman_coord)
-                if not len(self.pacman_coords):
+                self.dead_pacmen.add(self.pacman_coords[pacman_index])
+                if len(self.dead_pacmen) == len(self.pacman_coords):
                     return True
 
             for ghost_index in range(self.num_ghosts):
                 if self.prev_pacman_coords[pacman_index] == self.ghost_coords[ghost_index] and self.pacman_coords[pacman_index] == self.prev_ghost_coords[ghost_index]:
-                    self.pacman_coords.remove(pacman_coord)
-                    if not len(self.pacman_coords):
+                    self.dead_pacmen.add(self.pacman_coords[pacman_index])
+                    if len(self.dead_pacmen) == len(self.pacman_coords):
                         return True
 
         if not len(self.pill_coords):

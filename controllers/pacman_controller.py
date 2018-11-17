@@ -90,11 +90,10 @@ class PacmanController(base_controller_class.BaseController):
         return random.choices([node for node in functions])[0]
 
 
-    def get_move(self, game_state):
+    def get_move(self, game_state, pacman_index):
         """Checks all possible moves against the state evaluator and 
-        determines which move is optimal, returning that move.
-
-        This is performed for each pacman presented as part of the game state.
+        determines which move is optimal, returning that move for the pacman at pacman_index
+        in game_state.
         """
 
         def move_pacman(pacman_coord, direction):
@@ -125,33 +124,26 @@ class PacmanController(base_controller_class.BaseController):
             return False
 
 
-        best_eval_directions = []
+        best_eval_result = -1 * ARBITRARY_LARGE_NUMBER
+        best_eval_direction = d.Direction.NONE
 
-        for pacman_coord in game_state.pacman_coords:
-            best_eval_result = -1 * ARBITRARY_LARGE_NUMBER
-            best_eval_direction = d.Direction.NONE
+        for direction in POSSIBLE_MOVES:
+            tmp_pacman_coord = coord_class.Coordinate(game_state.pacman_coords[pacman_index].x, game_state.pacman_coords[pacman_index].y)
 
-            for direction in POSSIBLE_MOVES:
-                tmp_pacman_coord = coord_class.Coordinate(pacman_coord.x, pacman_coord.y)
+            if move_pacman(tmp_pacman_coord, direction):
+                eval_result = self.evaluate_state(game_state, tmp_pacman_coord)
 
-                if move_pacman(tmp_pacman_coord, direction):
-                    eval_result = self.evaluate_state(game_state, tmp_pacman_coord)[0]
+                if eval_result > best_eval_result:
+                    best_eval_result = eval_result
+                    best_eval_direction = direction
 
-                    if eval_result > best_eval_result:
-                        best_eval_result = eval_result
-                        best_eval_direction = direction
-            
-            best_eval_directions.append(best_eval_direction)
-
-        return best_eval_directions
+        
+        return best_eval_direction
          
 
-    def evaluate_state(self, game_state, pacman_coord=None):
-        """Given a current (or potential) game state, a rating
+    def evaluate_state(self, game_state, pacman_coord):
+        """Given a current (or potential) game state and a new pacman coordinate, a rating
         is provided from the state evaluator.
-
-        Optional parameter pacman_coord can check a differing pacman
-        coordinate against the state evaluator.
         """
 
         def get_nearest_distance(pacman_coord, object):
@@ -177,9 +169,8 @@ class PacmanController(base_controller_class.BaseController):
                 coords_to_search = game_state.fruit_coord
 
             elif object == 'pacman' and len(game_state.pacman_coords) > 1:
-                coords_to_search = game_state.pacman_coords
-                coords_to_search.remove(pacman_coord)
-                
+                coords_to_search = [coord_class.Coordinate(c.x, c.y) for c in game_state.pacman_coords if not c.x == pacman_coord.x and not c.y == pacman_coord.y]
+
             else:
                 coords_to_search = []
                 
@@ -264,24 +255,14 @@ class PacmanController(base_controller_class.BaseController):
             return evaluate(node.value, [evaluate_state_recursive(self.state_evaluator.get_left_child(node)), evaluate_state_recursive(self.state_evaluator.get_right_child(node))])
 
 
-        if not pacman_coord:
-            pacman_coords = game_state.pacman_coords
+        ghost_distance = get_nearest_distance(pacman_coord, 'ghost')
+        pill_distance = get_nearest_distance(pacman_coord, 'pill')
+        fruit_distance = get_nearest_distance(pacman_coord, 'fruit')
+        pacman_distance = get_nearest_distance(pacman_coord, 'pacman')
+        num_adj_walls = game_state.num_adj_walls
 
-        else:
-            pacman_coords = [pacman_coord]
-
-        evaluations = []
-        for pacman_coord in pacman_coords:
-            ghost_distance = get_nearest_distance(pacman_coord, 'ghost')
-            pill_distance = get_nearest_distance(pacman_coord, 'pill')
-            fruit_distance = get_nearest_distance(pacman_coord, 'fruit')
-            pacman_distance = get_nearest_distance(pacman_coord, 'pacman')
-            num_adj_walls = game_state.num_adj_walls
-
-            evaluations.append(evaluate_state_recursive(self.state_evaluator.get_root()))
+        return evaluate_state_recursive(self.state_evaluator.get_root())
         
-        return evaluations
-
 
     def visualize(self, print_output=True):
         """Prints a function representing the state evaluator.
