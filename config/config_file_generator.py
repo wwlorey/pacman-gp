@@ -57,7 +57,7 @@ width = {width}\n\
 height = {height}\n\
 pill density = {pill density}\n\
 wall density = {wall density}\n\
-num pacmen = 1\n\
+num pacmen = {num pacmen}\n\
 num ghosts = 3\n\
 \n\
 num wall carvers = 2\n\
@@ -91,60 +91,17 @@ log file path = output/{experiment name}_log.txt\n\
 soln file path = output/{experiment name}_soln.txt\n\
 world file path = output/highest_score_game_sequence_all_time_step_world_file_{experiment name}.txt\n'
 
-
-
-
-
-config_template1 = '[DEFAULT]\n\
-\n\
-###################################\n\
-# GP Parameters\n\
-###################################\n\
-num experiment runs = 3\n\
-num fitness evals = 2000\n\
-\n\
-###################################\n\
-# World Generation Parameters\n\
-###################################\n\
-width = {width}\n\
-height = {height}\n\
-pill density = {pill density}\n\
-wall density = {wall density}\n\
-num ghosts = 3\n\
-\n\
-num wall carvers = 2\n\
-max wall carver travel distance = 10\n\
-min wall carver travel distance = 3\n\
-\n\
-use external seed = False\n\
-default seed = 123456789\n\
-\n\
-###################################\n\
-# Score \n\
-###################################\n\
-fruit spawn prob = {fruit spawn prob}\n\
-fruit score = {fruit score}\n\
-\n\
-###################################\n\
-# Timing\n\
-###################################\n\
-time multiplier = {time multiplier}\n\
-\n\
-###################################\n\
-# Output Files\n\
-###################################\n\
-log file path = output/{experiment name}_log.txt\n\
-world file path = output/highest_score_game_sequence_all_time_step_world_file_{experiment name}.txt\n'
-
 config_data = \
 [
-    (10, 15, 50, 25, 0.05, 10, 2, 'small'), 
-    (30, 20, 25, 30, 0.05, 10, 2, 'large')
+    (10, 15, 50, 25, 0.05, 10, 2, 'small', 1), 
+    (30, 20, 25, 30, 0.05, 10, 2, 'large', 1),
+    (10, 15, 50, 25, 0.05, 10, 2, 'BONUS_small', 2), 
+    (30, 20, 25, 30, 0.05, 10, 2, 'BONUS_large', 2)
 ]
 
 FILE_NAME_INDEX = 7
 
-config_data_key = ['width', 'height', 'pill density', 'wall density', 'fruit spawn probability', 'fruit score', 'time multiplier', 'experiment name']
+config_data_key = ['width', 'height', 'pill density', 'wall density', 'fruit spawn probability', 'fruit score', 'time multiplier', 'experiment name', 'num pacmen']
 
 
 # Populate new config files

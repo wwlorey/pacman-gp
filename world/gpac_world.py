@@ -157,7 +157,7 @@ class GPacWorld:
                 break
 
 
-    def move_pacman(self, directions):
+    def move_pacmen(self, directions):
         """Moves all pacman in self.pacman_coords in directions[i] (indexed the same 
         as self.pacman_coords), where each direction is leads pacman to a valid location.
         """
@@ -216,25 +216,28 @@ class GPacWorld:
         """Returns True if the game is over, False otherwise.
 
         The game is over if any of the following is true:
-            1. pacman and a ghost are in the same cell
-            2. pacman collided with a ghost
+            1. a pacman and a ghost are in the same cell, leaving no other surviving pacman
+            2. a pacman collided with a ghost, leaving no other surviving pacman
             3. all pills are gone
             4. time remaining is equal to zero
         """
         for pacman_index, pacman_coord in enumerate(self.pacman_coords):
             if pacman_coord in self.ghost_coords:
-                return True
+                self.pacman_coords.remove(pacman_coord)
+                if not len(self.pacman_coords):
+                    return True
 
             for ghost_index in range(self.num_ghosts):
                 if self.prev_pacman_coords[pacman_index] == self.ghost_coords[ghost_index] and self.pacman_coords[pacman_index] == self.prev_ghost_coords[ghost_index]:
-                    return True
+                    self.pacman_coords.remove(pacman_coord)
+                    if not len(self.pacman_coords):
+                        return True
 
         if not len(self.pill_coords):
             return True
 
         if not self.time_remaining:
             return True
-
 
         return False # The game continues
 

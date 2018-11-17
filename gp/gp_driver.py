@@ -305,7 +305,7 @@ class GPDriver:
 
         self.update_game_state(individual)
 
-        individual.world.move_pacman(individual.pacman_cont.get_move(individual.game_state))
+        individual.world.move_pacmen(individual.pacman_cont.get_move(individual.game_state))
 
         for ghost_id in range(len(individual.world.ghost_coords)):
             individual.world.move_ghost(ghost_id, individual.ghosts_cont.get_move(ghost_id, individual.game_state))
