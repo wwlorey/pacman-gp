@@ -30,22 +30,26 @@ that implement bonus content are as follows:
 
 ### BONUS2
 
-* `config/BONUS_large_competing.cfg`
-* `config/BONUS_small_competing.cfg`
+* `config/BONUS_large_multi_controller.cfg`
+* `config/BONUS_small_multi_controller.cfg`
 * `controllers/nodes_BONUS2.py`
 * `controllers/pacman_controller_BONUS2.py`
 * `gp/gp_driver_BONUS2.py`
 * `gp/gpac_world_individual_BONUS2.py`
 * `gp/soln_BONUS2.py`
-* `output/BONUS_small_competing_graph.png`
-* `output/BONUS_small_competing_log.txt`
-* `output/BONUS_small_competing_soln.txt`
-* `output/highest_score_game_sequence_all_time_step_world_file_BONUS_small_competing.txt`
+* `output/BONUS_small_multi_controller_graph.png`
+* `output/BONUS_small_multi_controller_log.txt`
+* `output/BONUS_small_multi_controller_soln.txt`
+* `output/highest_score_game_sequence_all_time_step_world_file_BONUS_small_multi_controller.txt`
 * `world/gpac_world_BONUS2.py`
 
 Additionally, code that differs as part of the bonus implementations are noted 
-in the source code using comments. All source files not listed above
+in the source code using comments (e.g. `# BONUS1` or `# BONUS2`). All source files not listed above
 pertain to the main assignment deliverables.
+
+Note: All files (including bonus files) are in the master branch on Git. Additionally, two branches are hosted which each
+contain the bonus files (BONUS1 and BONUS2) instead of the main assignment deliverable source files. If the bonus deliverables
+are to be run, it would be easiest to switch to the branch containing that bonus' deliverables and run the project.
 
 
 #################################

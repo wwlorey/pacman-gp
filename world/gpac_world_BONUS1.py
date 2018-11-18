@@ -156,7 +156,7 @@ class GPacWorld:
                 self.pill_coords.add(c)
                 break
 
-
+    # BONUS1 (rename move_pacman to move_pacmen)
     def move_pacmen(self, directions):
         """Moves all pacman in self.pacman_coords in directions[i] (indexed the same 
         as self.pacman_coords), where each direction is leads pacman to a valid location.
@@ -221,6 +221,7 @@ class GPacWorld:
             3. all pills are gone
             4. time remaining is equal to zero
         """
+        # BONUS1 (only end the game when all pacmen are dead)
         for pacman_index, pacman_coord in enumerate(self.pacman_coords):
             if pacman_coord in self.ghost_coords:
                 self.pacman_coords.remove(pacman_coord)

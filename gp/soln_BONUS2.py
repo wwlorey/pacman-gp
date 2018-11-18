@@ -15,6 +15,8 @@ class Solution:
         file = open(self.config.settings['soln file path'], 'w')
 
         file.write('###################################\n# State Evaluator Tree (list format)\n###################################\n')
+        
+        # BONUS2 (print all controllers to the solution file)
         for pacman_cont in individual.pacman_conts:
             file.write(str([n.value for n in pacman_cont.state_evaluator]))
             file.write('\n')

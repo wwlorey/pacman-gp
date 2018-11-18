@@ -1,69 +1,5 @@
-\documentclass[11pt]{article}
-\usepackage[left=3cm, right=3cm, top=2cm]{geometry}
-\usepackage{graphicx}
-\usepackage[utf8]{inputenc}
-\usepackage[english]{babel}
-\usepackage{float}
-
-% Prevent heading numbers
-\setcounter{secnumdepth}{0}
-
-% Command definitions 
-\newcommand{\fitnessplotcaption}[2]{\caption{Global Best Fitness versus Fitness Evaluations for the \textbf{{#1}}, Randomly Generated World. The figure was generated with data obtained by running the GP with the \textbf{{#2}} configuration file.}}
-
-\newcommand{\addgraphic}[1]{\centerline{\includegraphics[scale=0.7]{output/#1_graph.png}}}
-
-\newcommand{\tablecaption}[1]{\caption{Statistical Analysis performed on the {#1}}}
-
-\title{COMP SCI 5401 FS2018 Assignment 2b}
-\author{William  Lorey \\ wwlytc@mst.edu}
-\date{}
-
-\begin{document}
-
-\maketitle
-
-\tableofcontents
-
-\section{Introduction}
-
-\section{Main Assignment Deliverables}
-
-\begin{figure}[H]
-    \addgraphic{small}
-    \fitnessplotcaption{Small}{small.cfg}
-    \label{fig:small}
-\end{figure}
-
-\begin{figure}[H]
-    \addgraphic{large}
-    \fitnessplotcaption{Large}{large.cfg}
-    \label{fig:med_small}
-\end{figure}
-
-
-\section{BONUS1: Multiple Pacmen Employing the Same Controller Discussion}
-
-\begin{figure}[H]
-    \addgraphic{BONUS_small}
-    \fitnessplotcaption{BONUS1 (Multiple Pacmen Using the Same Controller) Small}{BONUS\_small.cfg}
-    \label{fig:med_large}
-\end{figure}
-
-
-\section{BONUS2: Multiple Pacmen Employing Different Controllers Discussion}
-
-\begin{figure}[H]
-    \addgraphic{BONUS_small_multi_controller}
-    \fitnessplotcaption{BONUS2 (Multiple Pacmen Using Different Controllers) Small}{BONUS\_small\_multi\_controller.cfg}
-    \label{fig:large}
-\end{figure}
-
-
-\section{Analysis of Main Assignment, BONUS1, and BONUS2}
-
-\begin{table}[H] 
-\tablecaption{BONUS1 Small, Multi-Pacman World versus BONUS2 Small, Multi-Pacman World Employing Multiple Controllers}        
+\begin{table}[] 
+\tablecaption{TODO caption}        
 \label{TODO label}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
@@ -88,8 +24,8 @@
 }                    
 \end{table}
 
-\begin{table}[H] 
-\tablecaption{BONUS2 Small, Multi-Pacman World Employing Multiple Controllers versus Small, Single-Pacman World}        
+\begin{table}[] 
+\tablecaption{TODO caption}        
 \label{TODO label}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
@@ -114,8 +50,8 @@
 }                    
 \end{table}
 
-\begin{table}[H] 
-\tablecaption{BONUS1 Small, Multi-Pacman World versus Small, Single-Pacman World}
+\begin{table}[] 
+\tablecaption{TODO caption}        
 \label{TODO label}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
@@ -141,4 +77,3 @@
 }                    
 \end{table}
 
-\end{document}

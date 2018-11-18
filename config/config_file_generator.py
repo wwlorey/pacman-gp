@@ -97,8 +97,8 @@ config_data = \
     (30, 20, 25, 30, 0.05, 10, 2, 'large', 1),
     (10, 15, 50, 25, 0.05, 10, 2, 'BONUS_small', 2), 
     (30, 20, 25, 30, 0.05, 10, 2, 'BONUS_large', 2),
-    (10, 15, 50, 25, 0.05, 10, 2, 'BONUS_small_competing', 2), 
-    (30, 20, 25, 30, 0.05, 10, 2, 'BONUS_large_competing', 2)
+    (10, 15, 50, 25, 0.05, 10, 2, 'BONUS_small_multi_controller', 2), 
+    (30, 20, 25, 30, 0.05, 10, 2, 'BONUS_large_multi_controller', 2)
 ]
 
 FILE_NAME_INDEX = 7

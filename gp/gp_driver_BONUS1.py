@@ -305,6 +305,7 @@ class GPDriver:
 
         self.update_game_state(individual)
 
+        # BONUS1 (changed move_pacman to move_pacmen)
         individual.world.move_pacmen(individual.pacman_cont.get_move(individual.game_state))
 
         for ghost_id in range(len(individual.world.ghost_coords)):
