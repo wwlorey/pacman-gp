@@ -1,4 +1,54 @@
 #################################
+# Notes on the BONUS Sections #
+#################################
+
+For this assignment, both offered bonuses were implemented:
+
+* BONUS1: Multiple pacmen employing the same controller
+* BONUS2: Multiple pacmen employing different controllers
+
+Instead of programmatically choosing between
+controller use for pacman, multiple source
+files which implement bonus material 
+are included alongside source files 
+which implement standard assignment 
+deliverables. Lists of the additional files 
+that implement bonus content are as follows:
+
+### BONUS1
+
+* `config/BONUS_large.cfg`
+* `config/BONUS_small.cfg`
+* `controllers/nodes_BONUS1.py`
+* `controllers/pacman_controller_BONUS1.py`
+* `gp/gp_driver_BONUS1.py`
+* `output/BONUS_small_graph.png`
+* `output/BONUS_small_log.txt`
+* `output/BONUS_small_soln.txt`
+* `output/highest_score_game_sequence_all_time_step_world_file_BONUS_small.txt`
+* `world/gpac_world_BONUS1.py`
+
+### BONUS2
+
+* `config/BONUS_large_competing.cfg`
+* `config/BONUS_small_competing.cfg`
+* `controllers/nodes_BONUS2.py`
+* `controllers/pacman_controller_BONUS2.py`
+* `gp/gp_driver_BONUS2.py`
+* `gp/gpac_world_individual_BONUS2.py`
+* `gp/soln_BONUS2.py`
+* `output/BONUS_small_competing_graph.png`
+* `output/BONUS_small_competing_log.txt`
+* `output/BONUS_small_competing_soln.txt`
+* `output/highest_score_game_sequence_all_time_step_world_file_BONUS_small_competing.txt`
+* `world/gpac_world_BONUS2.py`
+
+Additionally, code that differs as part of the bonus implementations are noted 
+in the source code using comments. All source files not listed above
+pertain to the main assignment deliverables.
+
+
+#################################
 #	Coding Standards	#
 #################################
 
