@@ -125,9 +125,31 @@ Note that only the small world was used to examine BONUS2.
 
 \section{Analysis of Main Assignment, BONUS1, and BONUS2}
 
+Three pairings of statistical analysis were performed on the main assignment GP, BONUS1, and BONUS2. This analysis
+consisted of an f-test to determine the assumption of equal variances followed by a t-test either assuming equal variances
+or assuming unequal variances depending on the output of the f-test. The pairings of statistical analysis are as follows:
+
+\begin{itemize}
+  \item BONUS1 Small, Multi-Pacman World versus BONUS2 Small, Multi-Pacman World Employing Multiple Controllers (Table \ref{bonus1_bonus2})
+  \item BONUS2 Small, Multi-Pacman World Employing Multiple Controllers versus Small, Single-Pacman World (Table \ref{bonus2_std})
+  \item BONUS1 Small, Multi-Pacman World versus Small, Single-Pacman World (Table \ref{bonus1_std})
+\end{itemize}
+
+In each analysis it was involved in (Tables \ref{bonus1_bonus2} and \ref{bonus2_std}), the BONUS2 approach, 
+employing multiple pacmen each with their own controller,
+proved to be statistically superior on the given problem space. This implies that the pacmen controllers could have evolved
+in tandem to ensure cooperation between pacmen in getting the highest possible score.
+
+Another interesting observation is that when the standard GP employing a single pacman was compared to BONUS1, employing multiple
+pacmen and one pacman controller (Table \ref{bonus1_std}), there was no statistical difference between the two approaches.
+This result showed that more pacmen, all controlled by the same controller, are not necessarily more optimal than one pacman
+controlled by one controller and that to see the gains of more pacmen in the world, alternate controller approaches (such
+as using different controllers for each pacman, as seen in BONUS2) may be necessary.
+
+
 \begin{table}[H] 
 \tablecaption{BONUS1 Small, Multi-Pacman World versus BONUS2 Small, Multi-Pacman World Employing Multiple Controllers}        
-\label{TODO label}                 
+\label{bonus1_bonus2}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
 \hline               
@@ -153,7 +175,7 @@ Note that only the small world was used to examine BONUS2.
 
 \begin{table}[H] 
 \tablecaption{BONUS2 Small, Multi-Pacman World Employing Multiple Controllers versus Small, Single-Pacman World}        
-\label{TODO label}                 
+\label{bonus2_std}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
 \hline               
@@ -179,7 +201,7 @@ Note that only the small world was used to examine BONUS2.
 
 \begin{table}[H] 
 \tablecaption{BONUS1 Small, Multi-Pacman World versus Small, Single-Pacman World}
-\label{TODO label}                 
+\label{bonus1_std}                 
 \resizebox{\textwidth}{!}{%        
 \begin{tabular}{|l|l|l|}           
 \hline               
