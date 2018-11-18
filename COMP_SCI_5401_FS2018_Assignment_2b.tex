@@ -9,7 +9,7 @@
 \setcounter{secnumdepth}{0}
 
 % Command definitions 
-\newcommand{\fitnessplotcaption}[1]{\caption{Evaluations versus Fitness for the \textbf{{#1}}, Randomly Generated World}}
+\newcommand{\fitnessplotcaption}[2]{\caption{Global Best Fitness versus Fitness Evaluations for the \textbf{{#1}}, Randomly Generated World. The figure was generated with data obtained by running the GP with the \textbf{{#2}} configuration file.}}
 
 \newcommand{\addgraphic}[1]{\centerline{\includegraphics[scale=0.7]{output/#1_graph.png}}}
 
@@ -21,29 +21,36 @@
 
 \maketitle
 
+\tableofcontents
+
+\section{Introduction}
+
+\section{BONUS1: Multiple Pacmen Employing the Same Controller}
+
+\section{BONUS2: Multiple Pacmen Employing Different Controllers}
+
 \begin{figure}[H]
     \addgraphic{small}
-    \fitnessplotcaption{Small}
+    \fitnessplotcaption{Small}{small.cfg}
     \label{fig:small}
 \end{figure}
 
 \begin{figure}[H]
-    \addgraphic{med_small}
-    \fitnessplotcaption{Medium Small}
+    \addgraphic{large}
+    \fitnessplotcaption{Large}{large.cfg}
     \label{fig:med_small}
 \end{figure}
 
 \begin{figure}[H]
-    \addgraphic{med_large}
-    \fitnessplotcaption{Medium Large}
+    \addgraphic{BONUS_small}
+    \fitnessplotcaption{BONUS1 (Multiple Pacmen Using the Same Controller) Small}{BONUS\_small.cfg}
     \label{fig:med_large}
 \end{figure}
 
 \begin{figure}[H]
-    \addgraphic{large}
-    \fitnessplotcaption{Large}
+    \addgraphic{BONUS_small_competing}
+    \fitnessplotcaption{BONUS2 (Multiple Pacmen Using Different Controllers) Small}{BONUS\_small\_competing.cfg}
     \label{fig:large}
 \end{figure}
 
 \end{document}
-

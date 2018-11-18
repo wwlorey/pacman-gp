@@ -59,5 +59,5 @@ for log_file_index in range(len(log_file_paths)):
         plt.ylabel('Fitness')
 
         # Save and close the plot
-        plt.savefig(log_file_paths[log_file_index][:log_file_paths[log_file_index].find('.txt')] + '_graph.png')
+        plt.savefig(log_file_paths[log_file_index][:log_file_paths[log_file_index].find('_log.txt')] + '_graph.png')
         plt.close()
