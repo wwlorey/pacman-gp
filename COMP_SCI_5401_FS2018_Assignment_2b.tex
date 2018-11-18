@@ -25,8 +25,6 @@
 
 \tableofcontents
 
-\section{Introduction}
-
 \section{Main Assignment Deliverables}
 
 \begin{figure}[H]
@@ -38,25 +36,90 @@
 \begin{figure}[H]
     \addgraphic{large}
     \fitnessplotcaption{Large}{large.cfg}
-    \label{fig:med_small}
+    \label{fig:large}
 \end{figure}
 
 
-\section{BONUS1: Multiple Pacmen Employing the Same Controller Discussion}
+\section{BONUS1: Multiple Pacmen Employing the Same Controller}
+
+Support for multiple pacmen was included the main assignment, however, all standard project 
+deliverables were supplied with only one pacman spawned. For BONUS1, two pacmen were
+spawned for each world, each employing the same controller. Both pacmen had to die
+for each game to end and both pacmen shared the fitness (or score) obtained after
+completing a game. To give the pacmen an opportunity for a sense of space relative to each other, 
+an additional terminal was 
+added to the GP tree's terminal set, namely the Manhattan distance between the 
+current pacman and the nearest other pacman.
+
+Changes from the main assignment to this bonus assignment involved a mixture of 
+cosmetic changes, such as renaming a function \texttt{move\_pacman} to \texttt{move\_pacmen}
+to better describe the situation, and real algorithmic changes. One such algorithmic
+change was the game over check. As per the bonus specification, each game would
+only end if all pacmen were dead, or if the other pre-existing conditions were met. 
+To satisfy this, As soon as a pacman was seen as
+either colliding with a ghost or sharing a cell with a ghost, it was removed from
+that world's list of pacmen. Only after the length of that list was zero would the game
+end, not including all pills being consumed and the time running out.
+
+Another algorithmic change involved adding an additional Manhattan distance terminal node
+for the distance to the nearest pacman. This was implemented by mirroring the implementation of existing
+distance terminal nodes, implementing another distance calculation. Since the main assignment 
+encoded a given world's pacman as a member of a list,
+adding additional pacmen was not particularly intensive.
+
+Figure \ref{fig:bonus_small} depicts the evaluations versus fitness for the experiments involving
+two pacmen per world employing the same controller. This figure offered fairly small variance with
+outliers demonstrated as performing far beyond the average of the population in some cases.
+
+Note that only the small world was used to examine BONUS1.
 
 \begin{figure}[H]
     \addgraphic{BONUS_small}
-    \fitnessplotcaption{BONUS1 (Multiple Pacmen Using the Same Controller) Small}{BONUS\_small.cfg}
-    \label{fig:med_large}
+    \fitnessplotcaption{BONUS1 (Multiple Pacmen Employing the Same Controller) Small}{BONUS\_small.cfg}
+    \label{fig:bonus_small}
 \end{figure}
 
 
-\section{BONUS2: Multiple Pacmen Employing Different Controllers Discussion}
+\section{BONUS2: Multiple Pacmen Employing Different Controllers}
+
+The second bonus involved implementing support for multiple pacmen in a world as well
+as the ability for each pacman to be controlled by different controllers. This functionality
+in addition to the new game over check and terminal set addition discussed in the BONUS1 
+section was implemented.
+
+The implementation of this bonus section required more changes to the original codebase than BONUS1,
+as the ties between the pacman list associated with each world and the single pacman
+controller were stronger. The main way this dependency was removed was by creating 
+a list of pacman controllers to match the list of pacmen. A pacman list index was then passed along 
+with the game's state to the pacman controllers so that controller had a specific pacman
+to control. Code also had to be removed that allowed one controller to move all pacmen
+passed along in the game state, as each pacman now had its own controller.
+
+Because there were multiple controllers, functions such as the bloat controller had
+to be adjusted to handle multiple controller trees. Additionally, the recombination and mutation functions
+were updated so that each controller tree was involved in crossover and sub-tree mutation. 
+
+To maintain the relationship between pacman and controller, dead pacmen, instead of being
+removed from the pacman list, were noted in a taboo list. Before moving pacmen, this list
+would be polled to see if the current pacman being moved was dead. Once the length of the
+taboo list equaled the length of the pacman list, all pacmen in the world were known to be 
+dead.
+
+One additional change was made to satisfy this bonus section. The solution file generator
+was altered to output the controller of both pacmen upon the discovery of a globally optimal
+score.
+
+Figure \ref{fig:bonus_small_multi}, depicting the evaluations versus fitness for this bonus
+assignment with two independently-controlled pacmen per world, demonstrates volatile 
+variances and high outlying score values.
+
+Note that only the small world was used to examine BONUS2.
+
 
 \begin{figure}[H]
     \addgraphic{BONUS_small_multi_controller}
-    \fitnessplotcaption{BONUS2 (Multiple Pacmen Using Different Controllers) Small}{BONUS\_small\_multi\_controller.cfg}
-    \label{fig:large}
+    \fitnessplotcaption{BONUS2 (Multiple Pacmen Employing Different Controllers) Small}{BONUS\_small\_multi\_controller.cfg}
+    \label{fig:bonus_small_multi}
 \end{figure}
 
 
