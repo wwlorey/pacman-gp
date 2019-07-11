@@ -1,3 +1,5 @@
+#### CS 5401 Evolutionary Computing | Evolving pacman controllers using genetic programming (GP)
+
 #################################
 # Notes on the BONUS Sections #
 #################################
@@ -51,6 +53,7 @@ Note: All files (including bonus files) are in the master branch on Git. Additio
 contain the bonus files (BONUS1 and BONUS2) instead of the main assignment deliverable source files. If the bonus deliverables
 are to be run, it would be easiest to switch to the branch containing that bonus' deliverables and run the project.
 
+#### Provided README:
 
 #################################
 #	Coding Standards	#
